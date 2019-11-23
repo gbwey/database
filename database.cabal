@@ -1,0 +1,77 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: f90038b8b97549705467678d97cbbdc2008a49e13dc75332c0f2c04884c671ac
+
+name:           database
+version:        0.1.0.0
+category:       Web
+homepage:       https://github.com/gbwey/database#readme
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2018 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+
+library
+  exposed-modules:
+      Database.MSSql
+      Database.MySql
+      Database.Oracle
+      Database.Postgres
+      Database.Sqlite
+      Database.Util
+      Database.Znork
+  other-modules:
+      Paths_database
+  hs-source-dirs:
+      src
+  ghc-options: -fomit-interface-pragmas
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , dhall >=1.27.0
+    , lens
+    , mtl
+    , shakespeare
+    , template-haskell
+    , text
+  default-language: Haskell2010
+
+test-suite database-test
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  other-modules:
+      Database.MSSql
+      Database.MySql
+      Database.Oracle
+      Database.Postgres
+      Database.Sqlite
+      Database.Util
+      Database.Znork
+      Paths_database
+  hs-source-dirs:
+      src
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , database
+    , dhall >=1.27.0
+    , lens
+    , mtl
+    , shakespeare
+    , tasty
+    , tasty-hunit
+    , template-haskell
+    , text
+  default-language: Haskell2010

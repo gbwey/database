@@ -1,0 +1,44 @@
+name:                database
+version:             0.1.0.0
+#synopsis:
+#description:
+homepage:            https://github.com/gbwey/database#readme
+license:             BSD3
+author:              Author name here
+maintainer:          example@example.com
+copyright:           2018 Author name here
+category:            Web
+extra-source-files:
+- README.md
+
+dependencies:
+  - base >= 4.7 && < 5
+  - aeson
+  - bytestring
+  - dhall >= 1.27.0
+  - lens
+  - mtl
+  - shakespeare
+  - template-haskell
+  - text
+
+library:
+  source-dirs: src
+  ghc-options:
+  - -fomit-interface-pragmas
+
+tests:
+  database-test:
+    main:                Main.hs
+    source-dirs:
+    - src
+    - test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+#    - -fomit-interface-pragmas
+    dependencies:
+    - database
+    - tasty
+    - tasty-hunit
