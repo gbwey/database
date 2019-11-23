@@ -46,6 +46,12 @@ import Data.Functor.Contravariant ((>$<))
 class DConn a where
   connText :: a -> Text
   getDbDefault :: p a -> TH.Name
+  showDb :: a -> Text
+  getDb :: a -> Maybe Text
+  getSchema :: a -> Maybe Text
+  -- | start and end deimiters for each database type
+  getDelims :: proxy a -> Maybe (Char, Char)
+
 
 newtype Secret = Secret { unSecret :: Text } deriving (TH.Lift, Generic, Eq, Read)
 

@@ -59,3 +59,7 @@ instance ToText (DBPG a) where
 instance DConn (DBPG a) where
   connText DBPG {..} = [st|#{_pgdriver};Server=#{_pgserver};Port=#{maybe "5432" show _pgport};Database=#{_pgdb};Uid=#{_pguid};Pwd=#{unSecret _pgpwd};|]
   getDbDefault _ = ''DBPG
+  showDb DBPG {..} = [st|postgres ip=#{_pgserver} db=#{_pgdb}|]
+  getSchema = _pgschema -- not sure how to specify the schema for postgres odbc
+  getDb = Just . _pgdb
+  getDelims _ = Just ('\"','\"')

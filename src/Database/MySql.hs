@@ -58,3 +58,7 @@ instance ToText (DBMY a) where
 instance DConn (DBMY a) where
   connText DBMY {..} = [st|#{_mydriver};Server=#{_myserver};Port=#{maybe "3306" show _myport};Database=#{_mydb};User=#{_myuid};Password=#{unSecret _mypwd};option=67108864|]
   getDbDefault _ = ''DBMY
+  showDb DBMY {..} = [st|mysql ip=#{_myserver} db=#{_mydb}|]
+  getSchema = Just . _mydb -- no schemas within dbs ie treats dbs as if it is a schema!!!
+  getDb = const Nothing
+  getDelims _ = Just ('`','`')

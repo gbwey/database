@@ -57,6 +57,10 @@ instance ToText (DBMS a) where
 instance DConn (DBMS a) where
   connText DBMS {..} = [st|#{_msdriver};Server=#{_msserver};Database=#{_msdb};#{connAuth _msauthn};|]
   getDbDefault _ = ''DBMS
+  showDb DBMS {..} = [st|mssql ip=#{_msserver} db=#{_msdb}|]
+  getSchema = const Nothing
+  getDb = Just . _msdb
+  getDelims _ = Just ('[',']')
 
 connAuth :: MSAuthn -> String
 connAuth Trusted = "Trusted_Connection=yes"

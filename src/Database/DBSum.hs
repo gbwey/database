@@ -64,6 +64,26 @@ instance DConn (DBSum a) where
                 OR x -> connText x
                 S3 x -> connText x
   getDbDefault _ = error "need to use 'a' not 'p a' for getDbDefault DBSum"
+  showDb = \case
+                MS x -> showDb x
+                PG x -> showDb x
+                MY x -> showDb x
+                OR x -> showDb x
+                S3 x -> showDb x
+  getSchema = \case
+                MS x -> getSchema x
+                PG x -> getSchema x
+                MY x -> getSchema x
+                OR x -> getSchema x
+                S3 x -> getSchema x
+
+  getDb = \case
+                MS x -> getDb x
+                PG x -> getDb x
+                MY x -> getDb x
+                OR x -> getDb x
+                S3 x -> getDb x
+  getDelims _ = error "need to use 'a' not 'p a' for getDelims DBSum"
 
 
 {-

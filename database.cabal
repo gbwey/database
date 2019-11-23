@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f90038b8b97549705467678d97cbbdc2008a49e13dc75332c0f2c04884c671ac
+-- hash: fb27fd06d427530858f2ba2fd133c5891b33d1e43db8ed4693ba7a2a12ce4f86
 
 name:           database
 version:        0.1.0.0
@@ -21,13 +21,13 @@ extra-source-files:
 
 library
   exposed-modules:
+      Database.DBSum
       Database.MSSql
       Database.MySql
       Database.Oracle
       Database.Postgres
       Database.Sqlite
       Database.Util
-      Database.Znork
   other-modules:
       Paths_database
   hs-source-dirs:
@@ -49,13 +49,13 @@ test-suite database-test
   type: exitcode-stdio-1.0
   main-is: Main.hs
   other-modules:
+      Database.DBSum
       Database.MSSql
       Database.MySql
       Database.Oracle
       Database.Postgres
       Database.Sqlite
       Database.Util
-      Database.Znork
       Paths_database
   hs-source-dirs:
       src

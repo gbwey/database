@@ -55,3 +55,7 @@ instance ToText (DBSqlite a) where
 instance DConn (DBSqlite a) where
   connText DBSqlite {..} = [st|#{_s3driver};Database=#{_s3fn};|] -- ;TraceFile=d:\haskell\s.log;|]
   getDbDefault _ = ''DBSqlite
+  showDb DBSqlite {..} = [st|sqlite db=#{_s3fn}|]
+  getSchema = const Nothing
+  getDb = Just . T.pack . _s3fn
+  getDelims _ = Just ('"','"')

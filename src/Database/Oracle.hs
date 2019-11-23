@@ -78,3 +78,7 @@ instance DConn (DBOracle a) where
       TnsName driver tns -> [st|#{driver}; dbq=#{tns}; Uid=#{_oruid}; Pwd=#{unSecret _orpwd};|]
       DsnOracle dsn -> [st|DSN=#{dsn}; Uid=#{_oruid}; Pwd=#{unSecret _orpwd};|]
   getDbDefault _ = ''DBOracle
+  showDb DBOracle {..} = [st|oracle #{_orConnType} schema=#{_orschema}|]
+  getSchema = Just . _orschema
+  getDb = const Nothing -- i dont know how to go across dbs within oracle
+  getDelims _ = Just ('\"','\"')
