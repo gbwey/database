@@ -17,7 +17,7 @@
 {-# LANGUAGE DeriveLift #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE ViewPatterns #-}
-module Database.Znork where
+module Database.DBSum where
 import Dhall hiding (string,auto,map)
 import Control.Lens
 import qualified Dhall as D

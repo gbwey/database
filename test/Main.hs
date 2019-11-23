@@ -5,7 +5,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 module Main where
-import Database.Znork
+import Database.DBSum
 import Database.MSSql
 import Test.Tasty
 import Test.Tasty.HUnit
