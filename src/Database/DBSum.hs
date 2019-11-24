@@ -48,8 +48,7 @@ instance ToDhall (DBSum a) where
 -- constructor is a functor only but record is applicative
 toDBSum :: forall a. D.Type (DBSum a)
 toDBSum = D.union (
-     mempty
-  <> constructor "MS" (MS <$> D.auto @(DBMS a))
+     constructor "MS" (MS <$> D.auto @(DBMS a))
   <> constructor "PG" (PG <$> D.auto @(DBPG a))
   <> constructor "MY" (MY <$> D.auto @(DBMY a))
   <> constructor "OR" (OR <$> D.auto @(DBOracle a))
