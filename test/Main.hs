@@ -14,9 +14,8 @@ ms = D.input D.auto "./test_db.dhall"
 main :: IO ()
 main = do
   hSetEncoding stdout utf8
+  m <- ms
   defaultMain $ testGroup "Database"
     [
-        testCase "ms" $ do
-                          x <- ms
-                          x @?= MS (DBMS "fred" "asdf" Trusted "xx")
+        testCase "ms" $ m @?= MS (DBMS "fred" "asdf" Trusted "xx")
     ]
