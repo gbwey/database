@@ -38,7 +38,9 @@ import Data.Aeson (ToJSON(..))
 import Data.Functor.Contravariant ((>$<))
 
 class DConn a where
+  connList :: a -> [(Text, Text)]
   connText :: a -> Text
+  connText a = T.intercalate ";" (map (\(k, v) -> k <> "=" <> v) (connList a))
   getDbDefault :: p a -> TH.Name
   showDb :: a -> Text
   getDb :: a -> Maybe Text
@@ -46,6 +48,19 @@ class DConn a where
   -- | start and end deimiters for each database type
   getDelims :: proxy a -> Maybe (Char, Char)
 
+newtype DbDict = DbDict { unDict :: [(Text, Text)] } deriving (TH.Lift, Generic, Eq, Read, Show)
+
+instance Semigroup DbDict where
+  DbDict a <> DbDict b = DbDict (a <> b)
+
+instance Monoid DbDict where
+  mempty = DbDict mempty
+
+instance ToDhall DbDict where
+  injectWith i = unDict >$< injectWith i
+
+instance FromDhall DbDict where
+  autoWith _i = DbDict <$> autoWith defaultInterpretOptions
 
 newtype Secret = Secret { unSecret :: Text } deriving (TH.Lift, Generic, Eq, Read)
 

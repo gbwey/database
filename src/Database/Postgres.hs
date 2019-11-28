@@ -1,3 +1,4 @@
+-- todo: didnt use schema!
 {-# OPTIONS -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE LambdaCase #-}
@@ -35,16 +36,19 @@ import Control.Lens.TH
 import qualified Language.Haskell.TH.Syntax as TH
 import Dhall hiding (maybe,string,map)
 import Database.Util
+import Data.Maybe
 
-data DBPG a = DBPG {
-                     _pgdriver :: !Text
-                   , _pgserver :: !Text
-                   , _pgschema :: Maybe Text
-                   , _pguid :: !Text
-                   , _pgpwd :: !Secret
-                   , _pgdb :: !Text
-                   , _pgport :: !(Maybe Natural)
-                   } deriving (TH.Lift, Show, Generic, Read, Eq)
+data DBPG a =
+  DBPG
+    { _pgdriver :: !Text
+    , _pgserver :: !Text
+    , _pgschema :: Maybe Text
+    , _pguid :: !Text
+    , _pgpwd :: !Secret
+    , _pgdb :: !Text
+    , _pgport :: !(Maybe Natural)
+    , _pgdict :: !DbDict
+    } deriving (TH.Lift, Show, Generic, Read, Eq)
 
 makeLenses ''DBPG
 
@@ -57,7 +61,17 @@ instance ToText (DBPG a) where
   toText x = fromText $ maybe "" (<> ".") (_pgschema x) <> _pgdb x
 
 instance DConn (DBPG a) where
-  connText DBPG {..} = [st|#{_pgdriver};Server=#{_pgserver};Port=#{maybe "5432" show _pgport};Database=#{_pgdb};Uid=#{_pguid};Pwd=#{unSecret _pgpwd};|]
+  connList DBPG {..} =
+    [ ("Driver", _pgdriver)
+    , ("Server", _pgserver)
+    , ("Uid", _pguid)
+    , ("Pwd", unSecret _pgpwd)
+    , ("Database", _pgdb)
+    , ("Port", T.pack (show (fromMaybe 5432 _pgport)))
+    ] <> maybe [] (\x -> [("Schema", x)]) _pgschema
+      <> unDict _pgdict
+
+-- connText DBPG {..} = [st|#{_pgdriver};Server=#{_pgserver};Port=#{maybe "5432" show _pgport};Database=#{_pgdb};Uid=#{_pguid};Pwd=#{unSecret _pgpwd};|]
   getDbDefault _ = ''DBPG
   showDb DBPG {..} = [st|postgres ip=#{_pgserver} db=#{_pgdb}|]
   getSchema = _pgschema -- not sure how to specify the schema for postgres odbc

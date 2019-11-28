@@ -21,6 +21,7 @@ dependencies:
   - shakespeare
   - template-haskell
   - text
+  - containers
 
 library:
   source-dirs: src

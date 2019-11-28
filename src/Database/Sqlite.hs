@@ -1,3 +1,4 @@
+-- Timeout=10000;NoTxn=1  [[default these: before they were dumped in with the driver
 {-# OPTIONS -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE LambdaCase #-}
@@ -35,12 +36,13 @@ import Control.Lens.TH
 import qualified Language.Haskell.TH.Syntax as TH
 import Dhall hiding (maybe,string,map)
 import Database.Util
-import System.IO
 
-data DBSqlite a = DBSqlite { _s3driver :: !Text
-                           , _s3schema :: !(Maybe Text)
-                           , _s3fn :: !FilePath
-                           } deriving (TH.Lift, Show, Eq, Generic, Read)
+data DBSqlite a =
+  DBSqlite
+    { _s3driver :: !Text
+    , _s3fn :: !Text
+    , _s3dict :: !DbDict
+    } deriving (TH.Lift, Show, Eq, Generic, Read)
 
 makeLenses ''DBSqlite
 
@@ -50,12 +52,16 @@ instance FromDhall (DBSqlite a) where
 instance ToDhall (DBSqlite a) where
 
 instance ToText (DBSqlite a) where
-  toText x = fromText $ maybe "" (<> ".") (_s3schema x) <> T.pack (_s3fn x)
+  toText x = fromText $ _s3fn x
 
 instance DConn (DBSqlite a) where
-  connText DBSqlite {..} = [st|#{_s3driver};Database=#{_s3fn};|] -- ;TraceFile=d:\haskell\s.log;|]
+  connList DBSqlite {..} =
+    [ ("Driver", _s3driver)
+    , ("Database", _s3fn)
+    ] <> unDict _s3dict
+--  connText DBSqlite {..} = [st|#{_s3driver};Database=#{_s3fn};|] -- ;TraceFile=d:\haskell\s.log;|]
   getDbDefault _ = ''DBSqlite
   showDb DBSqlite {..} = [st|sqlite db=#{_s3fn}|]
   getSchema = const Nothing
-  getDb = Just . T.pack . _s3fn
+  getDb = Just . _s3fn
   getDelims _ = Just ('"','"')

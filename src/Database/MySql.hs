@@ -1,3 +1,4 @@
+-- need to add this to dictionary in dhall option=67108864
 {-# OPTIONS -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE LambdaCase #-}
@@ -35,15 +36,18 @@ import Control.Lens.TH
 import qualified Language.Haskell.TH.Syntax as TH
 import Dhall hiding (maybe,string,map)
 import Database.Util
+import Data.Maybe
 
-
-data DBMY a = DBMY { _mydriver :: !Text
-                   , _myserver :: !Text
-                   , _myuid :: !Text
-                   , _mypwd :: !Secret
-                   , _mydb :: !Text
-                   , _myport :: !(Maybe Natural)
-                   } deriving (TH.Lift, Show, Generic, Read, Eq)
+data DBMY a =
+  DBMY
+    { _mydriver :: !Text
+    , _myserver :: !Text
+    , _myuid :: !Text
+    , _mypwd :: !Secret
+    , _mydb :: !Text
+    , _myport :: !(Maybe Natural)
+    , _mydict :: !DbDict
+    } deriving (TH.Lift, Show, Generic, Read, Eq)
 
 makeLenses ''DBMY
 
@@ -55,8 +59,17 @@ instance ToDhall (DBMY a) where
 instance ToText (DBMY a) where
   toText = fromText . _mydb
 
+-- {_mydriver};Server=#{_myserver};Port=#{maybe "3306" show _myport};Database=#{_mydb};User=#{_myuid};Password=#{unSecret _mypwd};option=67108864;#{extra}|]
+
 instance DConn (DBMY a) where
-  connText DBMY {..} = [st|#{_mydriver};Server=#{_myserver};Port=#{maybe "3306" show _myport};Database=#{_mydb};User=#{_myuid};Password=#{unSecret _mypwd};option=67108864|]
+  connList DBMY {..} =
+    [ ("Driver", _mydriver)
+    , ("Server", _myserver)
+    , ("Port", T.pack (show (fromMaybe 3306 _myport)))
+    , ("Database", _mydb)
+    , ("User", _myuid)
+    , ("Password", unSecret _mypwd)
+    ] <> unDict _mydict
   getDbDefault _ = ''DBMY
   showDb DBMY {..} = [st|mysql ip=#{_myserver} db=#{_mydb}|]
   getSchema = Just . _mydb -- no schemas within dbs ie treats dbs as if it is a schema!!!

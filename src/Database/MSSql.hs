@@ -35,12 +35,14 @@ makePrisms ''MSAuthn
 instance FromDhall MSAuthn where
   autoWith i = genericAutoY i { fieldModifier = T.drop 3 }
 
-data DBMS a = DBMS {
-                 _msdriver :: !Text
-               , _msserver :: !Text
-               , _msauthn :: !MSAuthn
-               , _msdb :: !Text
-               } deriving (TH.Lift, Show, Eq, Generic, Read)
+data DBMS a =
+  DBMS
+    { _msdriver :: !Text
+    , _msserver :: !Text
+    , _msauthn :: !MSAuthn
+    , _msdb :: !Text
+    , _msdict :: !DbDict
+    } deriving (TH.Lift, Show, Eq, Generic, Read)
 
 makeLenses ''DBMS
 
@@ -55,14 +57,19 @@ instance ToText (DBMS a) where
   toText = fromText . _msdb
 
 instance DConn (DBMS a) where
-  connText DBMS {..} = [st|#{_msdriver};Server=#{_msserver};Database=#{_msdb};#{connAuth _msauthn};|]
+  connList DBMS {..} =
+    [ ("Driver", _msdriver)
+    , ("Server", _msserver)
+    , ("Database", _msdb)
+    ] <> connAuth _msauthn
+      <> unDict _msdict
   getDbDefault _ = ''DBMS
   showDb DBMS {..} = [st|mssql ip=#{_msserver} db=#{_msdb}|]
   getSchema = const Nothing
   getDb = Just . _msdb
   getDelims _ = Just ('[',']')
 
-connAuth :: MSAuthn -> String
-connAuth Trusted = "Trusted_Connection=yes"
-connAuth (UserPwd uid (Secret pwd)) = T.unpack [st|uid=#{uid};pwd=#{pwd}|]
+connAuth :: MSAuthn -> [(Text, Text)]
+connAuth Trusted = [("Trusted_Connection","yes")]
+connAuth (UserPwd uid (Secret pwd)) = [("uid", uid), ("pwd", pwd)]
 

@@ -1,3 +1,5 @@
+-- todo: fix ToText instance
+-- todo: orschema was never used but we dont use it in the connection string but is required downstream for getalltables etc
 {-# OPTIONS -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE LambdaCase #-}
@@ -51,13 +53,21 @@ toOCT = union
   <> ( DsnOracle <$> constructor "DsnOracle" D.strictText)
   )
 
-data DBOracle a = DBOracle { _orConnType :: OracleConnType
-                           , _oruid :: !Text
-                           , _orpwd :: !Secret
-                           , _orschema :: !Text
-                           } deriving (Eq, TH.Lift, Show, Generic, Read)
+data DBOracle a =
+  DBOracle
+    { _orConnType :: OracleConnType
+    , _oruid :: !Text
+    , _orpwd :: !Secret
+    , _orschema :: !Text
+    , _ordict :: !DbDict
+    } deriving (Eq, TH.Lift, Show, Generic, Read)
 
 makeLenses ''DBOracle
+
+getOrconnTypeList :: OracleConnType -> [(Text, Text)]
+getOrconnTypeList = \case
+  TnsName driver tns -> [("Driver", driver), ("dbq", tns)]
+  DsnOracle dsn -> [("DSN", dsn)]
 
 instance FromDhall (DBOracle a) where
   autoWith i = genericAutoY i { fieldModifier = T.drop 3 }
@@ -70,13 +80,14 @@ instance ToDhall OracleConnType where
 instance ToDhall (DBOracle a) where
 
 instance ToText (DBOracle a) where
-  toText = fromText . _orschema
+  toText = fromText . showDb
 
 instance DConn (DBOracle a) where
-  connText DBOracle {..} =
-    case _orConnType of
-      TnsName driver tns -> [st|#{driver}; dbq=#{tns}; Uid=#{_oruid}; Pwd=#{unSecret _orpwd};|]
-      DsnOracle dsn -> [st|DSN=#{dsn}; Uid=#{_oruid}; Pwd=#{unSecret _orpwd};|]
+  connList DBOracle {..} =
+--    getOrconnTypeList _orConnType <> (maybe [] (\x -> [("Schema", x)]) _orschema) <> [("Uid", _oruid), ("Pwd", unSecret _orpwd)] <> M.toList _ordict
+    getOrconnTypeList _orConnType
+     <> [("Uid", _oruid), ("Pwd", unSecret _orpwd)]
+     <> unDict _ordict
   getDbDefault _ = ''DBOracle
   showDb DBOracle {..} = [st|oracle #{_orConnType} schema=#{_orschema}|]
   getSchema = Just . _orschema

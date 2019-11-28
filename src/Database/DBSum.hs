@@ -56,12 +56,12 @@ toDBSum = D.union (
   )
 
 instance DConn (DBSum a) where
-  connText = \case
-                MS x -> connText x
-                PG x -> connText x
-                MY x -> connText x
-                OR x -> connText x
-                S3 x -> connText x
+  connList = \case
+                MS x -> connList x
+                PG x -> connList x
+                MY x -> connList x
+                OR x -> connList x
+                S3 x -> connList x
   getDbDefault _ = error "need to use 'a' not 'p a' for getDbDefault DBSum"
   showDb = \case
                 MS x -> showDb x
