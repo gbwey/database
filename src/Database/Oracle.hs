@@ -47,7 +47,7 @@ instance FromDhall OracleConnType where
 
 -- union of a record and a single constructor
 -- constructor is a functor only but record is applicative
-toOCT :: D.Type OracleConnType
+toOCT :: D.Decoder OracleConnType
 toOCT = union
   (  constructor "TnsName" (record ( TnsName <$> field "driver" D.strictText <*> field "tns" D.strictText ))
   <> ( DsnOracle <$> constructor "DsnOracle" D.strictText)

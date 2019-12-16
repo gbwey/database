@@ -79,7 +79,7 @@ instance ToJSON Secret where
 instance Show Secret where
   show _ = "Secret *******"
 
-genericAutoY :: (Generic a, GenericFromDhall (G.Rep a)) => InterpretOptions -> Type a
+genericAutoY :: (Generic a, GenericFromDhall (G.Rep a)) => InterpretOptions -> Decoder a
 genericAutoY i = fmap G.to (S.evalState (genericAutoWith i) 1)
 
 

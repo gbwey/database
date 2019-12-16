@@ -46,7 +46,7 @@ instance ToDhall (DBSum a) where
 
 -- union of a record and a single constructor
 -- constructor is a functor only but record is applicative
-toDBSum :: forall a. D.Type (DBSum a)
+toDBSum :: forall a. D.Decoder (DBSum a)
 toDBSum = D.union (
      constructor "MS" (MS <$> D.auto @(DBMS a))
   <> constructor "PG" (PG <$> D.auto @(DBPG a))
