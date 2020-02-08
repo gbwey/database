@@ -1,5 +1,6 @@
 {-# OPTIONS -Wall #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 module Main where
 import Database.DBSum
 import Database.MSSql
@@ -11,7 +12,9 @@ import Database.Util
 import Test.Tasty
 import Test.Tasty.HUnit
 import qualified Dhall as D
+import Dhall hiding (maybe)
 import System.IO
+import Text.Shakespeare.Text
 
 msCfgSum, orCfgSum, pgCfgSum, myCfgSum, s3CfgSum :: IO (DBSum ())
 msCfgSum = D.input D.auto "./test_dbms_sum.dhall"
@@ -65,5 +68,33 @@ main = do
     , testCase "postgres" $ pg @?= DBPG "{pgdriver}" "pgserver" (Just "pgschema") "pguid" "pgpwd" "pgdb" Nothing (DbDict [("pg1","aa"), ("pg2","bb")])
     , testCase "sqlite" $ s3 @?= DBSqlite "{s3driver}" "s3db" (DbDict [("s31","aa"), ("s32","bb")])
     , testCase "mysql" $ my @?= DBMY "{mydriver}" "myserver" "myuid" "mypwd" "mydb" Nothing (DbDict [("my1","aa"), ("my2","bb")])
-
+    , testCase "todhall: ms trusted" $ testmstodhall >>= \f -> (f (DBMS "driver2" "server2" Trusted "db2" (DbDict [("x2","y2")])) @?= Nothing)
+    , testCase "todhall: ms authn" $ testmstodhall >>= \f -> (f (DBMS "driver2" "server2" (UserPwd "user2" "pwd2") "db2" (DbDict [("x2","y2")])) @?= Just ("user2","pwd2"))
+    , testCase "todhall: or dsn" $ testortodhall >>= \f -> (f (DBOracle (DsnOracle "dsn1") "schema1" "user1" "pwd1" (DbDict [("x1","y1")])) @?= ("dsn1", Nothing))
+    , testCase "todhall: or driver" $ testortodhall >>= \f -> (f (DBOracle (TnsName "driver1" "tns1") "schema1" "user1" "pwd1" (DbDict [("x1","y1")])) @?= ("driver1", Just "tns1"))
     ]
+
+testmstodhall :: IO (DBMS a -> Maybe (Text, Text))
+testmstodhall =
+  let txt = [st|
+    let x = ./coredb.dhall
+    let t = { _1 : Text, _2 : Text }
+    in \(y : x.DBMST) ->
+       merge { Trusted = None t
+             , UserPwd = \(z : { user : Text, password : Text }) -> Some { _1 = z.user, _2 = z.password }
+             } y.authn : Optional t
+|]
+  in input auto txt
+
+testortodhall :: IO (DBOracle a -> (Text, Maybe Text))
+testortodhall =
+  let txt = [st|
+    let x = ./coredb.dhall
+    let t = { _1 : Text, _2 : Optional Text }
+    in \(y : x.DBORT) ->
+       merge { DsnOracle = \(z : Text) -> { _1 = z, _2 = None Text }
+             , TnsName = \(z : { driver : Text, tns : Text }) -> { _1 = z.driver, _2 = Some z.tns }
+             } y.ConnType : t
+|]
+  in input auto txt
+

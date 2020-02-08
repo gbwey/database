@@ -43,6 +43,19 @@ instance FromDhall (DBSum a) where
   autoWith _ = toDBSum
 
 instance ToDhall (DBSum a) where
+  injectWith _ = adapt >$< unionEncoder
+    (   encodeConstructorWith "MS" (inject @(DBMS a))
+    >|< encodeConstructorWith "PG" (inject @(DBPG a))
+    >|< encodeConstructorWith "MY" (inject @(DBMY a))
+    >|< encodeConstructorWith "OR" (inject @(DBOracle a))
+    >|< encodeConstructorWith "S3" (inject @(DBSqlite a))
+    )
+    where
+        adapt (MS a) = Left a
+        adapt (PG a) = Right (Left a)
+        adapt (MY a) = Right (Right (Left a))
+        adapt (OR a) = Right (Right (Right (Left a)))
+        adapt (S3 a) = Right (Right (Right (Right a)))
 
 -- union of a record and a single constructor
 -- constructor is a functor only but record is applicative

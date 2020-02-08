@@ -37,6 +37,7 @@ import qualified Language.Haskell.TH.Syntax as TH
 import Dhall hiding (maybe,string,map)
 import Database.Util
 import Data.Maybe
+import Data.Functor.Contravariant
 
 data DBPG a =
   DBPG
@@ -53,9 +54,21 @@ data DBPG a =
 makeLenses ''DBPG
 
 instance FromDhall (DBPG a) where
-  autoWith i = genericAutoY i { fieldModifier = T.drop 3 }
+  autoWith _i = dbpg
+
+dbpg :: Decoder (DBPG a)
+dbpg = genericAutoDD defaultInterpretOptions { fieldModifier = T.drop 3 }
 
 instance ToDhall (DBPG a) where
+  injectWith _o = recordEncoder $ (\x -> contramap (\(DBPG a b c d e f g h) -> (a, (b, (c, (d, (e, (f, (g, h)))))))) x)
+         ((encodeField @Text "driver") >*<
+         (encodeField @Text "server") >*<
+         (encodeField @(Maybe Text) "schema") >*<
+         (encodeField @Text "uid") >*<
+         (encodeField @Secret "pwd") >*<
+         (encodeField @Text "db") >*<
+         (encodeField @(Maybe Natural) "port") >*<
+         (encodeField @DbDict "dict"))
 
 instance ToText (DBPG a) where
   toText x = fromText $ maybe "" (<> ".") (_pgschema x) <> _pgdb x

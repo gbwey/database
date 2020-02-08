@@ -36,6 +36,7 @@ import Control.Lens.TH
 import qualified Language.Haskell.TH.Syntax as TH
 import Dhall hiding (maybe,string,map)
 import Database.Util
+import Data.Functor.Contravariant
 
 data DBSqlite a =
   DBSqlite
@@ -47,9 +48,16 @@ data DBSqlite a =
 makeLenses ''DBSqlite
 
 instance FromDhall (DBSqlite a) where
-  autoWith i = genericAutoY i { fieldModifier = T.drop 3 }
+  autoWith _i = dbs3
+
+dbs3 :: Decoder (DBSqlite a)
+dbs3 = genericAutoDD defaultInterpretOptions { fieldModifier = T.drop 3 }
 
 instance ToDhall (DBSqlite a) where
+  injectWith _o = recordEncoder $ (\x -> contramap (\(DBSqlite a b c) -> (a, (b, c))) x)
+         ((encodeField @Text "driver") >*<
+         (encodeField @Text "fn") >*<
+         (encodeField @DbDict "dict"))
 
 instance ToText (DBSqlite a) where
   toText x = fromText $ _s3fn x

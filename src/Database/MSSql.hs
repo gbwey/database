@@ -26,14 +26,16 @@ import Control.Lens.TH
 import qualified Language.Haskell.TH.Syntax as TH
 import Dhall hiding (maybe,string,map)
 import Database.Util
+import Data.Functor.Contravariant
+import Data.Functor.Contravariant.Divisible
 
-data MSAuthn = Trusted | UserPwd { _msUser :: Text, _msPassword :: Secret }
+data MSAuthn = Trusted | UserPwd { _msuser :: Text, _mspassword :: Secret }
   deriving (TH.Lift, Show, Eq, Generic, Read)
 
 makePrisms ''MSAuthn
 
 instance FromDhall MSAuthn where
-  autoWith i = genericAutoY i { fieldModifier = T.drop 3 }
+  autoWith i = genericAutoDD i { fieldModifier = T.drop 3 }
 
 data DBMS a =
   DBMS
@@ -47,11 +49,27 @@ data DBMS a =
 makeLenses ''DBMS
 
 instance FromDhall (DBMS a) where
-  autoWith i = genericAutoY i { fieldModifier = T.drop 3 }
+  autoWith _i = dbms
+
+dbms :: Decoder (DBMS a)
+dbms = genericAutoDD defaultInterpretOptions { fieldModifier = T.drop 3 }
 
 instance ToDhall MSAuthn where
+  injectWith _ = adapt >$< unionEncoder
+   (   encodeConstructorWith "Trusted" inject
+   >|< encodeConstructorWith "UserPwd" (recordEncoder $ divide (\case UserPwd a b -> (a,b); o -> error ("invalid userpwd: found " ++ show o)) (encodeField @Text "user") (encodeField @Secret "password"))
+   )
+   where
+     adapt Trusted = Left ()
+     adapt z@UserPwd {} = Right z
 
 instance ToDhall (DBMS a) where
+  injectWith _o = recordEncoder $ (\x -> contramap (\(DBMS a b c d e) -> (a, (b, (c, (d, e))))) x)
+         ((encodeField @Text "driver") >*<
+         (encodeField @Text "server") >*<
+         (encodeField @MSAuthn "authn") >*<
+         (encodeField @Text "db") >*<
+         (encodeField @DbDict "dict"))
 
 instance ToText (DBMS a) where
   toText = fromText . _msdb

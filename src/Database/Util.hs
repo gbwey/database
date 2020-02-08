@@ -35,7 +35,7 @@ import qualified Language.Haskell.TH.Syntax as TH
 --import Data.Char
 --import Data.List
 import Data.Aeson (ToJSON(..))
-import Data.Functor.Contravariant ((>$<))
+import Data.Functor.Contravariant ((>$<), contramap)
 
 class DConn a where
   connList :: a -> [(Text, Text)]
@@ -79,7 +79,10 @@ instance ToJSON Secret where
 instance Show Secret where
   show _ = "Secret *******"
 
-genericAutoY :: (Generic a, GenericFromDhall (G.Rep a)) => InterpretOptions -> Decoder a
-genericAutoY i = fmap G.to (S.evalState (genericAutoWith i) 1)
+genericAutoDD :: (Generic a, GenericFromDhall (G.Rep a)) => InterpretOptions -> Decoder a
+genericAutoDD i = fmap G.to (S.evalState (genericAutoWith i) 1)
+
+genericAutoEE :: (Generic a, GenericToDhall (G.Rep a)) => InterpretOptions -> Encoder a
+genericAutoEE i = contramap G.from (S.evalState (genericToDhallWith i) 1)
 
 

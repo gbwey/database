@@ -37,6 +37,7 @@ import qualified Language.Haskell.TH.Syntax as TH
 import Dhall hiding (maybe,string,map)
 import Database.Util
 import Data.Maybe
+import Data.Functor.Contravariant
 
 data DBMY a =
   DBMY
@@ -52,9 +53,21 @@ data DBMY a =
 makeLenses ''DBMY
 
 instance FromDhall (DBMY a) where
-  autoWith i = genericAutoY i { fieldModifier = T.drop 3 }
+  autoWith _i = dbmy
+
+dbmy :: Decoder (DBMY a)
+dbmy = genericAutoDD defaultInterpretOptions { fieldModifier = T.drop 3 }
 
 instance ToDhall (DBMY a) where
+  injectWith _o = recordEncoder $ (\x -> contramap (\(DBMY a b c d e f g) -> (a, (b, (c, (d, (e, (f, g))))))) x)
+         ((encodeField @Text "driver") >*<
+         (encodeField @Text "server") >*<
+         (encodeField @Text "uid") >*<
+         (encodeField @Secret "pwd") >*<
+         (encodeField @Text "db") >*<
+         (encodeField @(Maybe Natural) "port") >*<
+         (encodeField @DbDict "dict"))
+
 
 instance ToText (DBMY a) where
   toText = fromText . _mydb

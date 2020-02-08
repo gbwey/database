@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 484535d28d6548a1b78dea927cd14dc210eefa2535e333b80c9448ffa35339c4
+-- hash: 4eaf466477f86edf53869a89d4961b371d133a0106db22a2d02e032a685bcc79
 
 name:           database
 version:        0.1.0.0
@@ -38,6 +38,7 @@ library
     , base >=4.7 && <5
     , bytestring
     , containers
+    , contravariant
     , dhall >=1.28.0
     , lens
     , mtl
@@ -67,6 +68,7 @@ test-suite database-test
     , base >=4.7 && <5
     , bytestring
     , containers
+    , contravariant
     , database
     , dhall >=1.28.0
     , lens

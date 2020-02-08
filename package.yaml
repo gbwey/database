@@ -15,7 +15,8 @@ dependencies:
   - base >= 4.7 && < 5
   - aeson
   - bytestring
-  - dhall >= 1.27.0
+  - contravariant
+  - dhall >= 1.28.0
   - lens
   - mtl
   - shakespeare

@@ -38,6 +38,8 @@ import qualified Language.Haskell.TH.Syntax as TH
 import Dhall hiding (maybe,string,map)
 import qualified Dhall as D
 import Database.Util
+import Data.Functor.Contravariant
+import Data.Functor.Contravariant.Divisible
 
 data OracleConnType = TnsName { _ocdriver :: !Text, _octns :: !Text } | DsnOracle !Text
   deriving (TH.Lift, Show, Generic, Read, Eq)
@@ -70,14 +72,30 @@ getOrconnTypeList = \case
   DsnOracle dsn -> [("DSN", dsn)]
 
 instance FromDhall (DBOracle a) where
-  autoWith i = genericAutoY i { fieldModifier = T.drop 3 }
+  autoWith _i = dbor
+
+dbor :: Decoder (DBOracle a)
+dbor = genericAutoDD defaultInterpretOptions { fieldModifier = T.drop 3 }
 
 instance ToText OracleConnType where
   toText = fromText . T.pack . show
 
 instance ToDhall OracleConnType where
+  injectWith _ = adapt >$< unionEncoder
+   (   encodeConstructorWith "DsnOracle" (inject @Text)
+   >|< encodeConstructorWith "TnsName" (recordEncoder $ divide (\case TnsName a b -> (a,b); o -> error ("invalid tnsname: found " ++ show o) ) (encodeField @Text "driver") (encodeField @Text "tns"))
+   )
+   where
+     adapt (DsnOracle a) = Left a
+     adapt (TnsName a b) = Right (TnsName a b)
 
 instance ToDhall (DBOracle a) where
+  injectWith _o = recordEncoder $ (\x -> contramap (\(DBOracle a b c d e) -> (a, (b, (c, (d, e))))) x)
+         ((encodeField @OracleConnType "ConnType") >*<
+         (encodeField @Text "uid") >*<
+         (encodeField @Secret "pwd") >*<
+         (encodeField @Text "schema") >*<
+         (encodeField @DbDict "dict"))
 
 instance ToText (DBOracle a) where
   toText = fromText . showDb
