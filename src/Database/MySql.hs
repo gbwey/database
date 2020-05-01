@@ -53,10 +53,10 @@ data DBMY a =
 makeLenses ''DBMY
 
 instance FromDhall (DBMY a) where
-  autoWith _i = dbmy
+  autoWith _i = dbmysql
 
-dbmy :: Decoder (DBMY a)
-dbmy = genericAutoDD defaultInterpretOptions { fieldModifier = T.drop 3 }
+dbmysql :: Decoder (DBMY a)
+dbmysql = genericAutoWith defaultInterpretOptions { fieldModifier = T.drop 3 }
 
 instance ToDhall (DBMY a) where
   injectWith _o = recordEncoder $ (\x -> contramap (\(DBMY a b c d e f g) -> (a, (b, (c, (d, (e, (f, g))))))) x)
@@ -76,7 +76,7 @@ instance ToText (DBMY a) where
 
 instance DConn (DBMY a) where
   connList DBMY {..} =
-    [ ("Driver", _mydriver)
+    [ ("Driver", wrapBraces _mydriver)
     , ("Server", _myserver)
     , ("Port", T.pack (show (fromMaybe 3306 _myport)))
     , ("Database", _mydb)

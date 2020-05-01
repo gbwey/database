@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4eaf466477f86edf53869a89d4961b371d133a0106db22a2d02e032a685bcc79
+-- hash: 70c7a660890dd90c05fa5e2cc9dcc291006e0197afdc00c14d703dbb977eab78
 
 name:           database
 version:        0.1.0.0
@@ -32,14 +32,13 @@ library
       Paths_database
   hs-source-dirs:
       src
-  ghc-options: -fomit-interface-pragmas
   build-depends:
       aeson
     , base >=4.7 && <5
     , bytestring
     , containers
     , contravariant
-    , dhall >=1.28.0
+    , dhall >=1.31.1
     , lens
     , mtl
     , shakespeare
@@ -70,7 +69,7 @@ test-suite database-test
     , containers
     , contravariant
     , database
-    , dhall >=1.28.0
+    , dhall >=1.31.1
     , lens
     , mtl
     , shakespeare

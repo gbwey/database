@@ -11,6 +11,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE DeriveLift #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE ViewPatterns #-}
 {- |
 Module      : Database
 Description : Utility methods
@@ -24,29 +25,23 @@ Allows you to log to a file or the screen or both
 module Database.Util where
 import qualified Data.Text as T
 import Data.Text (Text)
-import qualified Control.Monad.State.Strict as S
---import Control.Lens
 import Data.String
-import qualified GHC.Generics as G
 import Dhall hiding (string,auto,map)
---import qualified Dhall as D
---import qualified Language.Haskell.TH as TH
 import qualified Language.Haskell.TH.Syntax as TH
---import Data.Char
---import Data.List
 import Data.Aeson (ToJSON(..))
-import Data.Functor.Contravariant ((>$<), contramap)
+import Data.Functor.Contravariant ((>$<))
+import GHC.Stack
 
 class DConn a where
-  connList :: a -> [(Text, Text)]
-  connText :: a -> Text
+  connList :: HasCallStack => a -> [(Text, Text)]
+  connText :: HasCallStack => a -> Text
   connText a = T.intercalate ";" (map (\(k, v) -> k <> "=" <> v) (connList a))
-  getDbDefault :: p a -> TH.Name
+  getDbDefault :: HasCallStack => p a -> TH.Name
   showDb :: a -> Text
   getDb :: a -> Maybe Text
   getSchema :: a -> Maybe Text
   -- | start and end deimiters for each database type
-  getDelims :: proxy a -> Maybe (Char, Char)
+  getDelims :: HasCallStack => proxy a -> Maybe (Char, Char)
 
 newtype DbDict = DbDict { unDict :: [(Text, Text)] } deriving (TH.Lift, Generic, Eq, Read, Show)
 
@@ -60,7 +55,7 @@ instance ToDhall DbDict where
   injectWith i = unDict >$< injectWith i
 
 instance FromDhall DbDict where
-  autoWith _i = DbDict <$> autoWith defaultInterpretOptions
+  autoWith i = DbDict <$> autoWith i
 
 newtype Secret = Secret { unSecret :: Text } deriving (TH.Lift, Generic, Eq, Read)
 
@@ -79,10 +74,14 @@ instance ToJSON Secret where
 instance Show Secret where
   show _ = "Secret *******"
 
-genericAutoDD :: (Generic a, GenericFromDhall (G.Rep a)) => InterpretOptions -> Decoder a
-genericAutoDD i = fmap G.to (S.evalState (genericAutoWith i) 1)
-
-genericAutoEE :: (Generic a, GenericToDhall (G.Rep a)) => InterpretOptions -> Encoder a
-genericAutoEE i = contramap G.from (S.evalState (genericToDhallWith i) 1)
+wrapBraces :: HasCallStack => Text -> Text
+wrapBraces (T.strip -> x)
+  | T.null x = error "dude0"
+  | otherwise =
+    case (T.head x, T.last x) of
+      ('{','}') -> x
+      ('{',_) -> error "dude1"
+      (_,'}') -> error "dude2"
+      _ -> "{" <> x <> "}"
 
 

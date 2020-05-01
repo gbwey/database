@@ -1,9 +1,9 @@
-let x = ./coredb.dhall
+let ms = ./corems.dhall
 in { driver = "{msdriver}"
    , server = "msserver"
    , db = "msdb"
-   , authn=x.msauthn "msuid" "mspwd"
-   , dict = [ x.kv "ms1" "aa", x.kv "ms2" "bb" ]
+   , authn = ms.authn "msuid" "mspwd"
+   , dict = [ ms.kv "ms1" "aa", ms.kv "ms2" "bb" ]
    }
 
 

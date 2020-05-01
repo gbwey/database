@@ -68,14 +68,14 @@ makeLenses ''DBOracle
 
 getOrconnTypeList :: OracleConnType -> [(Text, Text)]
 getOrconnTypeList = \case
-  TnsName driver tns -> [("Driver", driver), ("dbq", tns)]
+  TnsName driver tns -> [("Driver", wrapBraces driver), ("dbq", tns)]
   DsnOracle dsn -> [("DSN", dsn)]
 
 instance FromDhall (DBOracle a) where
-  autoWith _i = dbor
+  autoWith _i = dboracle
 
-dbor :: Decoder (DBOracle a)
-dbor = genericAutoDD defaultInterpretOptions { fieldModifier = T.drop 3 }
+dboracle :: Decoder (DBOracle a)
+dboracle = genericAutoWith defaultInterpretOptions { fieldModifier = T.drop 3 }
 
 instance ToText OracleConnType where
   toText = fromText . T.pack . show

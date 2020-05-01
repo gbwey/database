@@ -1,7 +1,7 @@
-let x = ./coredb.dhall
+let s3 = ./cores3.dhall
 in { driver = "{s3driver}"
    , fn = "s3db"
-   , dict = [ x.kv "s31" "aa", x.kv "s32" "bb" ]
+   , dict = [ s3.kv "s31" "aa", s3.kv "s32" "bb" ]
    }
 
 

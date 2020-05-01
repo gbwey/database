@@ -35,7 +35,7 @@ data MSAuthn = Trusted | UserPwd { _msuser :: Text, _mspassword :: Secret }
 makePrisms ''MSAuthn
 
 instance FromDhall MSAuthn where
-  autoWith i = genericAutoDD i { fieldModifier = T.drop 3 }
+  autoWith _i = genericAutoWith (defaultInterpretOptions { fieldModifier = T.drop 3 })
 
 data DBMS a =
   DBMS
@@ -49,10 +49,10 @@ data DBMS a =
 makeLenses ''DBMS
 
 instance FromDhall (DBMS a) where
-  autoWith _i = dbms
+  autoWith _i = dbmssql
 
-dbms :: Decoder (DBMS a)
-dbms = genericAutoDD defaultInterpretOptions { fieldModifier = T.drop 3 }
+dbmssql :: Decoder (DBMS a)
+dbmssql = genericAutoWith defaultInterpretOptions { fieldModifier = T.drop 3 }
 
 instance ToDhall MSAuthn where
   injectWith _ = adapt >$< unionEncoder
@@ -76,7 +76,7 @@ instance ToText (DBMS a) where
 
 instance DConn (DBMS a) where
   connList DBMS {..} =
-    [ ("Driver", _msdriver)
+    [ ("Driver", wrapBraces _msdriver)
     , ("Server", _msserver)
     , ("Database", _msdb)
     ] <> connAuth _msauthn

@@ -1,9 +1,9 @@
-let x = ./coredb.dhall
-in { ConnType = x.ortns "{ordriver}" "ordbq"
+let or = ./coreor.dhall
+in { ConnType = or.tns "{ordriver}" "ordbq"
    , schema="orschema"
    , uid="oruid"
    , pwd="orpwd"
-   , dict = [ x.kv "or1" "aa", x.kv "or2" "bb" ]
+   , dict = [ or.kv "or1" "aa", or.kv "or2" "bb" ]
    }
 
 

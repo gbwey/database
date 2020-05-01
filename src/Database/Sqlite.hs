@@ -48,10 +48,10 @@ data DBSqlite a =
 makeLenses ''DBSqlite
 
 instance FromDhall (DBSqlite a) where
-  autoWith _i = dbs3
+  autoWith _i = dbsqlite
 
-dbs3 :: Decoder (DBSqlite a)
-dbs3 = genericAutoDD defaultInterpretOptions { fieldModifier = T.drop 3 }
+dbsqlite :: Decoder (DBSqlite a)
+dbsqlite = genericAutoWith defaultInterpretOptions { fieldModifier = T.drop 3 }
 
 instance ToDhall (DBSqlite a) where
   injectWith _o = recordEncoder $ (\x -> contramap (\(DBSqlite a b c) -> (a, (b, c))) x)
@@ -64,7 +64,7 @@ instance ToText (DBSqlite a) where
 
 instance DConn (DBSqlite a) where
   connList DBSqlite {..} =
-    [ ("Driver", _s3driver)
+    [ ("Driver", wrapBraces _s3driver)
     , ("Database", _s3fn)
     ] <> unDict _s3dict
 --  connText DBSqlite {..} = [st|#{_s3driver};Database=#{_s3fn};|] -- ;TraceFile=d:\haskell\s.log;|]

@@ -77,7 +77,7 @@ main = do
 testmstodhall :: IO (DBMS a -> Maybe (Text, Text))
 testmstodhall =
   let txt = [st|
-    let x = ./coredb.dhall
+    let x = ./corems.dhall
     let t = { _1 : Text, _2 : Text }
     in \(y : x.DBMST) ->
        merge { Trusted = None t
@@ -89,7 +89,7 @@ testmstodhall =
 testortodhall :: IO (DBOracle a -> (Text, Maybe Text))
 testortodhall =
   let txt = [st|
-    let x = ./coredb.dhall
+    let x = ./coreor.dhall
     let t = { _1 : Text, _2 : Optional Text }
     in \(y : x.DBORT) ->
        merge { DsnOracle = \(z : Text) -> { _1 = z, _2 = None Text }

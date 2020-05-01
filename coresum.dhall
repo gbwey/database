@@ -1,9 +1,14 @@
-let x = ./coredb.dhall
-let DBSumT = < MS : x.DBMST
-             | PG : x.DBPGT
-             | MY : x.DBMYT
-             | OR : x.DBORT
-             | S3 : x.DBS3T >
+let ms = ./corems.dhall
+let pg = ./corepg.dhall
+let my = ./coremy.dhall
+let or = ./coreor.dhall
+let s3 = ./cores3.dhall
+
+let DBSumT = < MS : ms.DBMST
+             | PG : pg.DBPGT
+             | MY : my.DBMYT
+             | OR : or.DBORT
+             | S3 : s3.DBS3T >
 
 in {
    , dbsum = DBSumT

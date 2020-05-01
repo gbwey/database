@@ -1,4 +1,4 @@
-let x = ./coredb.dhall
+let pg = ./corepg.dhall
 in { driver = "{pgdriver}"
    , server = "pgserver"
    , db = "pgdb"
@@ -6,7 +6,7 @@ in { driver = "{pgdriver}"
    , port=None Natural
    , uid="pguid"
    , pwd="pgpwd"
-   , dict = [ x.kv "pg1" "aa", x.kv "pg2" "bb" ]
+   , dict = [ pg.kv "pg1" "aa", pg.kv "pg2" "bb" ]
    }
 
 

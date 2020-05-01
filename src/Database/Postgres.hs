@@ -54,10 +54,10 @@ data DBPG a =
 makeLenses ''DBPG
 
 instance FromDhall (DBPG a) where
-  autoWith _i = dbpg
+  autoWith _i = dbpostgres
 
-dbpg :: Decoder (DBPG a)
-dbpg = genericAutoDD defaultInterpretOptions { fieldModifier = T.drop 3 }
+dbpostgres :: Decoder (DBPG a)
+dbpostgres = genericAutoWith defaultInterpretOptions { fieldModifier = T.drop 3 }
 
 instance ToDhall (DBPG a) where
   injectWith _o = recordEncoder $ (\x -> contramap (\(DBPG a b c d e f g h) -> (a, (b, (c, (d, (e, (f, (g, h)))))))) x)
@@ -75,7 +75,7 @@ instance ToText (DBPG a) where
 
 instance DConn (DBPG a) where
   connList DBPG {..} =
-    [ ("Driver", _pgdriver)
+    [ ("Driver", wrapBraces _pgdriver)
     , ("Server", _pgserver)
     , ("Uid", _pguid)
     , ("Pwd", unSecret _pgpwd)

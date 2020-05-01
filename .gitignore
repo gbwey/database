@@ -1,1 +1,6 @@
+.ghc.environment.*
+.history
+dist-newstyle/
+dist/
 .stack-work/
+stack.yaml.lock
