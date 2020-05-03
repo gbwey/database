@@ -90,12 +90,12 @@ instance ToDhall OracleConnType where
      adapt (TnsName a b) = Right (TnsName a b)
 
 instance ToDhall (DBOracle a) where
-  injectWith _o = recordEncoder $ (\x -> contramap (\(DBOracle a b c d e) -> (a, (b, (c, (d, e))))) x)
-         ((encodeField @OracleConnType "ConnType") >*<
-         (encodeField @Text "uid") >*<
-         (encodeField @Secret "pwd") >*<
-         (encodeField @Text "schema") >*<
-         (encodeField @DbDict "dict"))
+  injectWith _o = recordEncoder $ contramap (\(DBOracle a b c d e) -> (a, (b, (c, (d, e)))))
+         (encodeField @OracleConnType "ConnType" >*<
+         encodeField @Text "uid" >*<
+         encodeField @Secret "pwd" >*<
+         encodeField @Text "schema" >*<
+         encodeField @DbDict "dict")
 
 instance ToText (DBOracle a) where
   toText = fromText . showDb

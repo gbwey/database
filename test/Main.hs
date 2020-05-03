@@ -68,10 +68,10 @@ main = do
     , testCase "postgres" $ pg @?= DBPG "{pgdriver}" "pgserver" (Just "pgschema") "pguid" "pgpwd" "pgdb" Nothing (DbDict [("pg1","aa"), ("pg2","bb")])
     , testCase "sqlite" $ s3 @?= DBSqlite "{s3driver}" "s3db" (DbDict [("s31","aa"), ("s32","bb")])
     , testCase "mysql" $ my @?= DBMY "{mydriver}" "myserver" "myuid" "mypwd" "mydb" Nothing (DbDict [("my1","aa"), ("my2","bb")])
-    , testCase "todhall: ms trusted" $ testmstodhall >>= \f -> (f (DBMS "driver2" "server2" Trusted "db2" (DbDict [("x2","y2")])) @?= Nothing)
-    , testCase "todhall: ms authn" $ testmstodhall >>= \f -> (f (DBMS "driver2" "server2" (UserPwd "user2" "pwd2") "db2" (DbDict [("x2","y2")])) @?= Just ("user2","pwd2"))
-    , testCase "todhall: or dsn" $ testortodhall >>= \f -> (f (DBOracle (DsnOracle "dsn1") "schema1" "user1" "pwd1" (DbDict [("x1","y1")])) @?= ("dsn1", Nothing))
-    , testCase "todhall: or driver" $ testortodhall >>= \f -> (f (DBOracle (TnsName "driver1" "tns1") "schema1" "user1" "pwd1" (DbDict [("x1","y1")])) @?= ("driver1", Just "tns1"))
+    , testCase "todhall: ms trusted" $ testmstodhall >>= \f -> f (DBMS "driver2" "server2" Trusted "db2" (DbDict [("x2","y2")])) @?= Nothing
+    , testCase "todhall: ms authn" $ testmstodhall >>= \f -> f (DBMS "driver2" "server2" (UserPwd "user2" "pwd2") "db2" (DbDict [("x2","y2")])) @?= Just ("user2","pwd2")
+    , testCase "todhall: or dsn" $ testortodhall >>= \f -> f (DBOracle (DsnOracle "dsn1") "schema1" "user1" "pwd1" (DbDict [("x1","y1")])) @?= ("dsn1", Nothing)
+    , testCase "todhall: or driver" $ testortodhall >>= \f -> f (DBOracle (TnsName "driver1" "tns1") "schema1" "user1" "pwd1" (DbDict [("x1","y1")])) @?= ("driver1", Just "tns1")
     ]
 
 testmstodhall :: IO (DBMS a -> Maybe (Text, Text))

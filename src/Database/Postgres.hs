@@ -60,15 +60,15 @@ dbpostgres :: Decoder (DBPG a)
 dbpostgres = genericAutoWith defaultInterpretOptions { fieldModifier = T.drop 3 }
 
 instance ToDhall (DBPG a) where
-  injectWith _o = recordEncoder $ (\x -> contramap (\(DBPG a b c d e f g h) -> (a, (b, (c, (d, (e, (f, (g, h)))))))) x)
-         ((encodeField @Text "driver") >*<
-         (encodeField @Text "server") >*<
-         (encodeField @(Maybe Text) "schema") >*<
-         (encodeField @Text "uid") >*<
-         (encodeField @Secret "pwd") >*<
-         (encodeField @Text "db") >*<
-         (encodeField @(Maybe Natural) "port") >*<
-         (encodeField @DbDict "dict"))
+  injectWith _o = recordEncoder $ contramap (\(DBPG a b c d e f g h) -> (a, (b, (c, (d, (e, (f, (g, h))))))))
+         (encodeField @Text "driver" >*<
+         encodeField @Text "server" >*<
+         encodeField @(Maybe Text) "schema" >*<
+         encodeField @Text "uid" >*<
+         encodeField @Secret "pwd" >*<
+         encodeField @Text "db" >*<
+         encodeField @(Maybe Natural) "port" >*<
+         encodeField @DbDict "dict")
 
 instance ToText (DBPG a) where
   toText x = fromText $ maybe "" (<> ".") (_pgschema x) <> _pgdb x

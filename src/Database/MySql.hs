@@ -59,14 +59,14 @@ dbmysql :: Decoder (DBMY a)
 dbmysql = genericAutoWith defaultInterpretOptions { fieldModifier = T.drop 3 }
 
 instance ToDhall (DBMY a) where
-  injectWith _o = recordEncoder $ (\x -> contramap (\(DBMY a b c d e f g) -> (a, (b, (c, (d, (e, (f, g))))))) x)
-         ((encodeField @Text "driver") >*<
-         (encodeField @Text "server") >*<
-         (encodeField @Text "uid") >*<
-         (encodeField @Secret "pwd") >*<
-         (encodeField @Text "db") >*<
-         (encodeField @(Maybe Natural) "port") >*<
-         (encodeField @DbDict "dict"))
+  injectWith _o = recordEncoder $ contramap (\(DBMY a b c d e f g) -> (a, (b, (c, (d, (e, (f, g)))))))
+         (encodeField @Text "driver" >*<
+         encodeField @Text "server" >*<
+         encodeField @Text "uid" >*<
+         encodeField @Secret "pwd" >*<
+         encodeField @Text "db" >*<
+         encodeField @(Maybe Natural) "port" >*<
+         encodeField @DbDict "dict")
 
 
 instance ToText (DBMY a) where

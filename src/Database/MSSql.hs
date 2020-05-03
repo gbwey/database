@@ -64,12 +64,12 @@ instance ToDhall MSAuthn where
      adapt z@UserPwd {} = Right z
 
 instance ToDhall (DBMS a) where
-  injectWith _o = recordEncoder $ (\x -> contramap (\(DBMS a b c d e) -> (a, (b, (c, (d, e))))) x)
-         ((encodeField @Text "driver") >*<
-         (encodeField @Text "server") >*<
-         (encodeField @MSAuthn "authn") >*<
-         (encodeField @Text "db") >*<
-         (encodeField @DbDict "dict"))
+  injectWith _o = recordEncoder $ contramap (\(DBMS a b c d e) -> (a, (b, (c, (d, e)))))
+         (encodeField @Text "driver" >*<
+         encodeField @Text "server" >*<
+         encodeField @MSAuthn "authn" >*<
+         encodeField @Text "db" >*<
+         encodeField @DbDict "dict")
 
 instance ToText (DBMS a) where
   toText = fromText . _msdb

@@ -54,10 +54,10 @@ dbsqlite :: Decoder (DBSqlite a)
 dbsqlite = genericAutoWith defaultInterpretOptions { fieldModifier = T.drop 3 }
 
 instance ToDhall (DBSqlite a) where
-  injectWith _o = recordEncoder $ (\x -> contramap (\(DBSqlite a b c) -> (a, (b, c))) x)
-         ((encodeField @Text "driver") >*<
-         (encodeField @Text "fn") >*<
-         (encodeField @DbDict "dict"))
+  injectWith _o = recordEncoder $ contramap (\(DBSqlite a b c) -> (a, (b, c)))
+         (encodeField @Text "driver" >*<
+         encodeField @Text "fn" >*<
+         encodeField @DbDict "dict")
 
 instance ToText (DBSqlite a) where
   toText x = fromText $ _s3fn x
