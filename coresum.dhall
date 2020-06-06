@@ -4,11 +4,11 @@ let my = ./coremy.dhall
 let or = ./coreor.dhall
 let s3 = ./cores3.dhall
 
-let DBSumT = < MS : ms.DBMST
-             | PG : pg.DBPGT
-             | MY : my.DBMYT
-             | OR : or.DBORT
-             | S3 : s3.DBS3T >
+let DBSumT = < MS : ms.Type
+             | PG : pg.Type
+             | MY : my.Type
+             | OR : or.Type
+             | S3 : s3.Type >
 
 in {
    , dbsum = DBSumT

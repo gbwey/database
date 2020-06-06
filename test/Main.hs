@@ -79,7 +79,7 @@ testmstodhall =
   let txt = [st|
     let x = ./corems.dhall
     let t = { _1 : Text, _2 : Text }
-    in \(y : x.DBMST) ->
+    in \(y : x.Type) ->
        merge { Trusted = None t
              , UserPwd = \(z : { user : Text, password : Text }) -> Some { _1 = z.user, _2 = z.password }
              } y.authn : Optional t
@@ -91,7 +91,7 @@ testortodhall =
   let txt = [st|
     let x = ./coreor.dhall
     let t = { _1 : Text, _2 : Optional Text }
-    in \(y : x.DBORT) ->
+    in \(y : x.Type) ->
        merge { DsnOracle = \(z : Text) -> { _1 = z, _2 = None Text }
              , TnsName = \(z : { driver : Text, tns : Text }) -> { _1 = z.driver, _2 = Some z.tns }
              } y.ConnType : t

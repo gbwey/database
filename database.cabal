@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.2.
+-- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 70c7a660890dd90c05fa5e2cc9dcc291006e0197afdc00c14d703dbb977eab78
+-- hash: fa22ef6ac9e862333119efbea546d43ae1316ecb79bdef4a1382aa88884a9ace
 
 name:           database
 version:        0.1.0.0
@@ -38,7 +38,7 @@ library
     , bytestring
     , containers
     , contravariant
-    , dhall >=1.31.1
+    , dhall >=1.32.0
     , lens
     , mtl
     , shakespeare
@@ -69,7 +69,7 @@ test-suite database-test
     , containers
     , contravariant
     , database
-    , dhall >=1.31.1
+    , dhall >=1.32.0
     , lens
     , mtl
     , shakespeare

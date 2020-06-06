@@ -8,8 +8,8 @@ let kv =
 let nodict = [] : List DictT
 
 in {
-   , nodict = nodict
-   , DictT = DictT
-   , kv = kv
+   , nodict
+   , DictT
+   , kv
 
    }

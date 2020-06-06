@@ -76,12 +76,13 @@ instance Show Secret where
 
 wrapBraces :: HasCallStack => Text -> Text
 wrapBraces (T.strip -> x)
-  | T.null x = error "dude0"
+  | T.null x = error "wrapBraces: missing driver!!"
   | otherwise =
-    case (T.head x, T.last x) of
+    let msg = "dont use braces and dont use Driver=... eg this is good: \"ODBC Driver 17 for SQL Server\""
+    in case (T.head x, T.last x) of
       ('{','}') -> x
-      ('{',_) -> error "dude1"
-      (_,'}') -> error "dude2"
+      ('{',_) -> error $ "wrapBraces: found open brace and without a closing brace:\n" ++ msg ++ "\n[" ++ T.unpack x ++ "]"
+      (_,'}') -> error $ "wrapBraces: found closed brace and without an open brace:\n" ++ msg ++ "\n[" ++ T.unpack x ++ "]"
       _ -> "{" <> x <> "}"
 
 
