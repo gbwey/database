@@ -29,7 +29,7 @@ import Database.Util
 import Data.Functor.Contravariant
 import Data.Functor.Contravariant.Divisible
 
-data MSAuthn = Trusted | UserPwd { _msuser :: Text, _mspassword :: Secret }
+data MSAuthn = Trusted | UserPwd { _msuser :: !Text, _mspassword :: !Secret }
   deriving (TH.Lift, Show, Eq, Generic, Read)
 
 makePrisms ''MSAuthn

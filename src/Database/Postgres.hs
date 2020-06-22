@@ -43,7 +43,7 @@ data DBPG a =
   DBPG
     { _pgdriver :: !Text
     , _pgserver :: !Text
-    , _pgschema :: Maybe Text
+    , _pgschema :: !(Maybe Text)
     , _pguid :: !Text
     , _pgpwd :: !Secret
     , _pgdb :: !Text

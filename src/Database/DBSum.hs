@@ -30,11 +30,11 @@ import Database.Oracle
 import Database.Util
 
 data DBSum a =
-     MS (DBMS a)
-   | PG (DBPG a)
-   | MY (DBMY a)
-   | OR (DBOracle a)
-   | S3 (DBSqlite a)
+     MS !(DBMS a)
+   | PG !(DBPG a)
+   | MY !(DBMY a)
+   | OR !(DBOracle a)
+   | S3 !(DBSqlite a)
    deriving (TH.Lift, Generic, Show, Eq)
 
 makePrisms ''DBSum

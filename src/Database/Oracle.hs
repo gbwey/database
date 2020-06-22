@@ -57,7 +57,7 @@ toOCT = union
 
 data DBOracle a =
   DBOracle
-    { _orConnType :: OracleConnType
+    { _orConnType :: !OracleConnType
     , _oruid :: !Text
     , _orpwd :: !Secret
     , _orschema :: !Text
