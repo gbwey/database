@@ -28,6 +28,11 @@ library:
   source-dirs: src
 #  ghc-options:
 #  - -fomit-interface-pragmas
+  when:
+     condition: impl(ghc >= 8.8)
+     ghc-options:
+     - -fwrite-ide-info
+     - -hiedir=.hie
 
 tests:
   database-test:
@@ -40,6 +45,11 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
 #    - -fomit-interface-pragmas
+    when:
+       condition: impl(ghc >= 8.8)
+       ghc-options:
+       - -fwrite-ide-info
+       - -hiedir=.hie
     dependencies:
     - database
     - tasty
