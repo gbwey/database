@@ -19,15 +19,15 @@
 {-# LANGUAGE ViewPatterns #-}
 module Database.DBSum where
 import Dhall hiding (string,auto,map)
-import Control.Lens
+import Control.Lens.TH (makePrisms)
 import qualified Dhall as D
 import qualified Language.Haskell.TH.Syntax as TH
-import Database.MSSql
-import Database.Postgres
-import Database.MySql
-import Database.Sqlite
-import Database.Oracle
-import Database.Util
+import Database.MSSql (DBMS)
+import Database.Postgres (DBPG)
+import Database.MySql (DBMY)
+import Database.Sqlite (DBSqlite)
+import Database.Oracle (DBOracle)
+import Database.Util (DConn(..))
 
 data DBSum a =
      MS !(DBMS a)

@@ -27,7 +27,7 @@ import qualified Data.Text as T
 import Data.Text (Text)
 import Data.String
 import Dhall hiding (string,auto,map)
-import qualified Language.Haskell.TH.Syntax as TH
+import qualified Language.Haskell.TH.Syntax as TH (Lift,Name)
 import Data.Aeson (ToJSON(..))
 import Data.Functor.Contravariant ((>$<))
 import GHC.Stack
@@ -72,13 +72,13 @@ instance ToJSON Secret where
   toJSON (Secret s) = toJSON s
 
 instance Show Secret where
-  show _ = "Secret *******"
+  show _ = "Secret ********"
 
 wrapBraces :: HasCallStack => Text -> Text
 wrapBraces (T.strip -> x)
   | T.null x = error "wrapBraces: missing driver!!"
   | otherwise =
-    let msg = "dont use braces and dont use Driver=... eg this is good: \"ODBC Driver 17 for SQL Server\""
+    let msg = "dont use braces and dont use Driver=... eg this works: \"ODBC Driver 17 for SQL Server\""
     in case (T.head x, T.last x) of
       ('{','}') -> x
       ('{',_) -> error $ "wrapBraces: found open brace and without a closing brace:\n" ++ msg ++ "\n[" ++ T.unpack x ++ "]"

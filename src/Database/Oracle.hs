@@ -28,13 +28,13 @@ Implementation of GConn for oracle.
 -}
 module Database.Oracle where
 import Prelude hiding (FilePath)
-import Text.Shakespeare.Text
+import Text.Shakespeare.Text (ToText(..),st)
 import Data.Text.Lazy.Builder (fromText)
 import Data.Text (Text)
 import qualified Data.Text as T
 import GHC.Generics (Generic)
-import Control.Lens.TH
-import qualified Language.Haskell.TH.Syntax as TH
+import Control.Lens.TH (makeLenses, makePrisms)
+import qualified Language.Haskell.TH.Syntax as TH (Lift)
 import Dhall hiding (maybe,string,map)
 import qualified Dhall as D
 import Database.Util
@@ -43,6 +43,8 @@ import Data.Functor.Contravariant.Divisible
 
 data OracleConnType = TnsName { _ocdriver :: !Text, _octns :: !Text } | DsnOracle !Text
   deriving (TH.Lift, Show, Generic, Read, Eq)
+
+makePrisms ''OracleConnType
 
 instance FromDhall OracleConnType where
   autoWith _ = toOCT

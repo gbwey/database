@@ -27,13 +27,13 @@ Implementation of GConn for ms sql server.
 -}
 module Database.Sqlite where
 import Prelude hiding (FilePath)
-import Text.Shakespeare.Text
+import Text.Shakespeare.Text (ToText(..),st)
 import Data.Text.Lazy.Builder (fromText)
 import Data.Text (Text)
 import qualified Data.Text as T
 import GHC.Generics (Generic)
-import Control.Lens.TH
-import qualified Language.Haskell.TH.Syntax as TH
+import Control.Lens.TH (makeLenses)
+import qualified Language.Haskell.TH.Syntax as TH (Lift)
 import Dhall hiding (maybe,string,map)
 import Database.Util
 import Data.Functor.Contravariant

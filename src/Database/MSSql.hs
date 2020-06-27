@@ -17,13 +17,13 @@
 {-# LANGUAGE TypeApplications #-}
 module Database.MSSql where
 import Prelude hiding (FilePath)
-import Text.Shakespeare.Text
+import Text.Shakespeare.Text (st,ToText(..))
 import Data.Text.Lazy.Builder (fromText)
 import Data.Text (Text)
 import qualified Data.Text as T
 import GHC.Generics (Generic)
-import Control.Lens.TH
-import qualified Language.Haskell.TH.Syntax as TH
+import Control.Lens.TH (makeLenses, makePrisms)
+import qualified Language.Haskell.TH.Syntax as TH (Lift)
 import Dhall hiding (maybe,string,map)
 import Database.Util
 import Data.Functor.Contravariant
