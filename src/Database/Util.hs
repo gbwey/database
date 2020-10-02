@@ -31,6 +31,7 @@ import qualified Language.Haskell.TH.Syntax as TH (Lift,Name)
 import Data.Aeson (ToJSON(..))
 import Data.Functor.Contravariant ((>$<))
 import GHC.Stack
+import Control.DeepSeq (NFData)
 
 class DConn a where
   connList :: HasCallStack => a -> [(Text, Text)]
@@ -44,6 +45,7 @@ class DConn a where
   getDelims :: HasCallStack => proxy a -> Maybe (Char, Char)
 
 newtype DbDict = DbDict { unDict :: [(Text, Text)] } deriving (TH.Lift, Generic, Eq, Read, Show)
+instance NFData DbDict
 
 instance Semigroup DbDict where
   DbDict a <> DbDict b = DbDict (a <> b)
@@ -58,6 +60,7 @@ instance FromDhall DbDict where
   autoWith i = DbDict <$> autoWith i
 
 newtype Secret = Secret { unSecret :: Text } deriving (TH.Lift, Generic, Eq, Read)
+instance NFData Secret
 
 instance IsString Secret where
   fromString = Secret . T.pack

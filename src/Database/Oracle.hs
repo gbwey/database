@@ -40,11 +40,14 @@ import qualified Dhall as D
 import Database.Util
 import Data.Functor.Contravariant
 import Data.Functor.Contravariant.Divisible
+import Control.DeepSeq (NFData)
 
 data OracleConnType = TnsName { _ocdriver :: !Text, _octns :: !Text } | DsnOracle !Text
   deriving (TH.Lift, Show, Generic, Read, Eq)
 
 makePrisms ''OracleConnType
+
+instance NFData OracleConnType
 
 instance FromDhall OracleConnType where
   autoWith _ = toOCT
@@ -67,6 +70,8 @@ data DBOracle a =
     } deriving (Eq, TH.Lift, Show, Generic, Read)
 
 makeLenses ''DBOracle
+
+instance NFData a => NFData (DBOracle a)
 
 getOrconnTypeList :: OracleConnType -> [(Text, Text)]
 getOrconnTypeList = \case

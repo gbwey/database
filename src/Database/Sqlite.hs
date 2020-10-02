@@ -37,6 +37,7 @@ import qualified Language.Haskell.TH.Syntax as TH (Lift)
 import Dhall hiding (maybe,string,map)
 import Database.Util
 import Data.Functor.Contravariant
+import Control.DeepSeq (NFData)
 
 data DBSqlite a =
   DBSqlite
@@ -46,6 +47,8 @@ data DBSqlite a =
     } deriving (TH.Lift, Show, Eq, Generic, Read)
 
 makeLenses ''DBSqlite
+
+instance NFData a => NFData (DBSqlite a)
 
 instance FromDhall (DBSqlite a) where
   autoWith _i = dbsqlite

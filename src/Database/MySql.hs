@@ -38,6 +38,7 @@ import Dhall hiding (maybe,string,map)
 import Database.Util
 import Data.Maybe
 import Data.Functor.Contravariant
+import Control.DeepSeq (NFData)
 
 data DBMY a =
   DBMY
@@ -51,6 +52,8 @@ data DBMY a =
     } deriving (TH.Lift, Show, Generic, Read, Eq)
 
 makeLenses ''DBMY
+
+instance NFData a => NFData (DBMY a)
 
 instance FromDhall (DBMY a) where
   autoWith _i = dbmysql

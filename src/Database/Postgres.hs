@@ -38,6 +38,7 @@ import Dhall hiding (maybe,string,map)
 import Database.Util
 import Data.Maybe (fromMaybe)
 import Data.Functor.Contravariant
+import Control.DeepSeq (NFData)
 
 data DBPG a =
   DBPG
@@ -52,6 +53,8 @@ data DBPG a =
     } deriving (TH.Lift, Show, Generic, Read, Eq)
 
 makeLenses ''DBPG
+
+instance NFData a => NFData (DBPG a)
 
 instance FromDhall (DBPG a) where
   autoWith _i = dbpostgres

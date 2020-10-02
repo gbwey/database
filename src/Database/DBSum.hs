@@ -28,6 +28,7 @@ import Database.MySql (DBMY)
 import Database.Sqlite (DBSqlite)
 import Database.Oracle (DBOracle)
 import Database.Util (DConn(..))
+import Control.DeepSeq (NFData)
 
 data DBSum a =
      MS !(DBMS a)
@@ -38,6 +39,8 @@ data DBSum a =
    deriving (TH.Lift, Generic, Show, Eq)
 
 makePrisms ''DBSum
+
+instance NFData a => NFData (DBSum a)
 
 instance FromDhall (DBSum a) where
   autoWith _ = toDBSum

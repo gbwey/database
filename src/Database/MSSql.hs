@@ -28,11 +28,14 @@ import Dhall hiding (maybe,string,map)
 import Database.Util
 import Data.Functor.Contravariant
 import Data.Functor.Contravariant.Divisible
+import Control.DeepSeq (NFData)
 
 data MSAuthn = Trusted | UserPwd { _msuser :: !Text, _mspassword :: !Secret }
   deriving (TH.Lift, Show, Eq, Generic, Read)
 
 makePrisms ''MSAuthn
+
+instance NFData MSAuthn
 
 instance FromDhall MSAuthn where
   autoWith _i = genericAutoWith (defaultInterpretOptions { fieldModifier = T.drop 3 })
@@ -47,6 +50,8 @@ data DBMS a =
     } deriving (TH.Lift, Show, Eq, Generic, Read)
 
 makeLenses ''DBMS
+
+instance NFData a => NFData (DBMS a)
 
 instance FromDhall (DBMS a) where
   autoWith _i = dbmssql
