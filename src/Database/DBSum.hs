@@ -18,7 +18,16 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE ViewPatterns #-}
 module Database.DBSum where
-import Dhall hiding (string,auto,map)
+import Dhall
+    ( (>|<),
+      constructor,
+      encodeConstructorWith,
+      inject,
+      unionEncoder,
+      FromDhall(..),
+      ToDhall(..) )
+import Data.Functor.Contravariant ((>$<))
+import GHC.Generics (Generic)      
 import Control.Lens.TH (makePrisms)
 import qualified Dhall as D
 import qualified Language.Haskell.TH.Syntax as TH

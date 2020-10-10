@@ -24,9 +24,22 @@ import qualified Data.Text as T
 import GHC.Generics (Generic)
 import Control.Lens.TH (makeLenses, makePrisms)
 import qualified Language.Haskell.TH.Syntax as TH (Lift)
-import Dhall hiding (maybe,string,map)
+import Dhall
+    ( (>*<),
+      (>|<),
+      defaultInterpretOptions,
+      encodeConstructorWith,
+      encodeField,
+      genericAutoWith,
+      inject,
+      recordEncoder,
+      unionEncoder,
+      Decoder,
+      FromDhall(..),
+      InterpretOptions(fieldModifier),
+      ToDhall(..) )
 import Database.Util
-import Data.Functor.Contravariant
+import Data.Functor.Contravariant ((>$<), Contravariant(contramap))
 import Data.Functor.Contravariant.Divisible
 import Control.DeepSeq (NFData)
 

@@ -34,10 +34,20 @@ import qualified Data.Text as T
 import GHC.Generics (Generic)
 import Control.Lens.TH (makeLenses)
 import qualified Language.Haskell.TH.Syntax as TH (Lift)
-import Dhall hiding (maybe,string,map)
+import Dhall
+    ( Natural,
+      (>*<),
+      defaultInterpretOptions,
+      encodeField,
+      genericAutoWith,
+      recordEncoder,
+      Decoder,
+      FromDhall(..),
+      InterpretOptions(fieldModifier),
+      ToDhall(..) )
 import Database.Util
 import Data.Maybe (fromMaybe)
-import Data.Functor.Contravariant
+import Data.Functor.Contravariant (Contravariant(contramap))
 import Control.DeepSeq (NFData)
 
 data DBPG a =

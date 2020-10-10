@@ -1,4 +1,5 @@
 {-# OPTIONS -Wall #-}
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ConstraintKinds #-}
@@ -25,12 +26,13 @@ Allows you to log to a file or the screen or both
 module Database.Util where
 import qualified Data.Text as T
 import Data.Text (Text)
-import Data.String
-import Dhall hiding (string,auto,map)
+import Data.String (IsString(..))
+import GHC.Generics (Generic)
+import Dhall (FromDhall(..), ToDhall(..))
 import qualified Language.Haskell.TH.Syntax as TH (Lift,Name)
 import Data.Aeson (ToJSON(..))
 import Data.Functor.Contravariant ((>$<))
-import GHC.Stack
+import GHC.Stack (HasCallStack)
 import Control.DeepSeq (NFData)
 
 class DConn a where
@@ -78,14 +80,20 @@ instance Show Secret where
   show _ = "Secret ********"
 
 wrapBraces :: HasCallStack => Text -> Text
-wrapBraces (T.strip -> x)
-  | T.null x = error "wrapBraces: missing driver!!"
-  | otherwise =
-    let msg = "dont use braces and dont use Driver=... eg this works: \"ODBC Driver 17 for SQL Server\""
-    in case (T.head x, T.last x) of
-      ('{','}') -> x
-      ('{',_) -> error $ "wrapBraces: found open brace and without a closing brace:\n" ++ msg ++ "\n[" ++ T.unpack x ++ "]"
-      (_,'}') -> error $ "wrapBraces: found closed brace and without an open brace:\n" ++ msg ++ "\n[" ++ T.unpack x ++ "]"
-      _ -> "{" <> x <> "}"
+wrapBraces (T.strip -> x) =
+  let msg = "dont use braces and dont use Driver=... eg this works: \"ODBC Driver 17 for SQL Server\""
+      msg0 = "\n" ++ msg ++ "\n[" ++ T.unpack x ++ "]"
+  in case T.uncons x of
+       Nothing -> error "wrapBraces: missing driver!!"
+       Just (s,y) | T.length x < 5 -> error $ "wrapBraces: not enough characters" ++ msg0
+                  | otherwise ->
+         case T.unsnoc y of
+           Nothing -> error $ "wrapBraces: not enough characters" ++ msg0
+           Just (_,e) ->
+             case (s,e) of
+               ('{','}') -> x
+               ('{',_) -> error $ "wrapBraces: found open brace and without a closing brace" ++ msg0
+               (_,'}') -> error $ "wrapBraces: found closed brace and without an opening brace" ++ msg0
+               _ -> "{" <> x <> "}"
 
 
