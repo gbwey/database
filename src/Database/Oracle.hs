@@ -1,6 +1,5 @@
 -- todo: fix ToText instance
 -- todo: orschema was never used but we dont use it in the connection string but is required downstream for getalltables etc
-{-# OPTIONS -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}

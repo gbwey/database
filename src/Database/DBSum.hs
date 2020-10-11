@@ -1,4 +1,3 @@
-{-# OPTIONS -Wall #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ConstraintKinds #-}
@@ -27,7 +26,7 @@ import Dhall
       FromDhall(..),
       ToDhall(..) )
 import Data.Functor.Contravariant ((>$<))
-import GHC.Generics (Generic)      
+import GHC.Generics (Generic)
 import Control.Lens.TH (makePrisms)
 import qualified Dhall as D
 import qualified Language.Haskell.TH.Syntax as TH
