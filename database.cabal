@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b465fa742a660a2aea4f8138c63dfa34c8f25dfbd396577b53eda6ae6ccd4bca
+-- hash: c94697ba42810458200ab2aa28c2643ae73acf1bf5d84bc33956b7f5711f4e96
 
 name:           database
 version:        0.1.0.0
@@ -32,7 +32,7 @@ library
       Paths_database
   hs-source-dirs:
       src
-  ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wpartial-fields -Wunused-type-patterns
+  ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wpartial-fields -Wunused-type-patterns -Wredundant-constraints
   build-depends:
       aeson
     , base >=4.7 && <5
@@ -57,7 +57,7 @@ test-suite database-test
       Paths_database
   hs-source-dirs:
       test
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wpartial-fields -Wunused-type-patterns
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wpartial-fields -Wunused-type-patterns -Wredundant-constraints
   build-depends:
       aeson
     , base >=4.7 && <5
