@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c94697ba42810458200ab2aa28c2643ae73acf1bf5d84bc33956b7f5711f4e96
+-- hash: 491c77cac24797988b56c26e342999769c509df23b28ea27cead0d1fca15011e
 
 name:           database
 version:        0.1.0.0
@@ -47,7 +47,7 @@ library
     , template-haskell
     , text
   if impl(ghc >= 8.8)
-    ghc-options: -fwrite-ide-info -hiedir=.hie
+    ghc-options: -fwrite-ide-info -hiedir=.hie -Widentities
   default-language: Haskell2010
 
 test-suite database-test
@@ -75,5 +75,5 @@ test-suite database-test
     , template-haskell
     , text
   if impl(ghc >= 8.8)
-    ghc-options: -fwrite-ide-info -hiedir=.hie
+    ghc-options: -fwrite-ide-info -hiedir=.hie -Widentities
   default-language: Haskell2010

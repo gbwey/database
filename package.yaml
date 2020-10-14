@@ -40,6 +40,7 @@ library:
      ghc-options:
      - -fwrite-ide-info
      - -hiedir=.hie
+     - -Widentities
 
 tests:
   database-test:
@@ -63,6 +64,7 @@ tests:
        ghc-options:
        - -fwrite-ide-info
        - -hiedir=.hie
+       - -Widentities
     dependencies:
     - database
     - tasty
