@@ -16,7 +16,6 @@ Module      : Database
 Description : Utility methods
 Copyright   : (c) Grant Weyburne, 2016
 License     : GPL-3
-Maintainer  : gbwey9@gmail.com
 
 Mainly has various logging functions and timing of commands.
 Allows you to log to a file or the screen or both
