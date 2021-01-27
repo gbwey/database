@@ -1,3 +1,4 @@
+{-# OPTIONS -Wno-partial-fields #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -21,7 +22,6 @@ import Data.Text.Lazy.Builder (fromText)
 import Data.Text (Text)
 import qualified Data.Text as T
 import GHC.Generics (Generic)
-import Control.Lens.TH (makeLenses, makePrisms)
 import qualified Language.Haskell.TH.Syntax as TH (Lift)
 import Dhall
     ( (>*<),
@@ -42,26 +42,22 @@ import Data.Functor.Contravariant ((>$<), Contravariant(contramap))
 import Data.Functor.Contravariant.Divisible
 import Control.DeepSeq (NFData)
 
-data MSAuthn = Trusted | UserPwd { _msuser :: !Text, _mspassword :: !Secret }
-  deriving (TH.Lift, Show, Eq, Generic, Read)
-
-makePrisms ''MSAuthn
+data MSAuthn = Trusted | UserPwd { msuser :: !Text, mspassword :: !Secret }
+  deriving (TH.Lift, Show, Eq, Generic)
 
 instance NFData MSAuthn
 
 instance FromDhall MSAuthn where
-  autoWith _i = genericAutoWith (defaultInterpretOptions { fieldModifier = T.drop 3 })
+  autoWith _i = genericAutoWith (defaultInterpretOptions { fieldModifier = T.drop (T.length "ms") })
 
 data DBMS a =
   DBMS
-    { _msdriver :: !Text
-    , _msserver :: !Text
-    , _msauthn :: !MSAuthn
-    , _msdb :: !Text
-    , _msdict :: !DbDict
-    } deriving (TH.Lift, Show, Eq, Generic, Read)
-
-makeLenses ''DBMS
+    { msdriver :: !Text
+    , msserver :: !Text
+    , msauthn :: !MSAuthn
+    , msdb :: !Text
+    , msdict :: !DbDict
+    } deriving (TH.Lift, Show, Eq, Generic)
 
 instance NFData a => NFData (DBMS a)
 
@@ -69,7 +65,7 @@ instance FromDhall (DBMS a) where
   autoWith _i = dbmssql
 
 dbmssql :: Decoder (DBMS a)
-dbmssql = genericAutoWith defaultInterpretOptions { fieldModifier = T.drop 3 }
+dbmssql = genericAutoWith defaultInterpretOptions { fieldModifier = T.drop (T.length "ms") }
 
 instance ToDhall MSAuthn where
   injectWith _ = adapt >$< unionEncoder
@@ -89,19 +85,19 @@ instance ToDhall (DBMS a) where
          encodeField @DbDict "dict")
 
 instance ToText (DBMS a) where
-  toText = fromText . _msdb
+  toText = fromText . msdb
 
 instance DConn (DBMS a) where
   connList DBMS {..} =
-    [ ("Driver", wrapBraces _msdriver)
-    , ("Server", _msserver)
-    , ("Database", _msdb)
-    ] <> connAuth _msauthn
-      <> unDict _msdict
+    [ ("Driver", wrapBraces msdriver)
+    , ("Server", msserver)
+    , ("Database", msdb)
+    ] <> connAuth msauthn
+      <> unDict msdict
   getDbDefault _ = ''DBMS
-  showDb DBMS {..} = [st|mssql ip=#{_msserver} db=#{_msdb}|]
+  showDb DBMS {..} = [st|mssql ip=#{msserver} db=#{msdb}|]
   getSchema = const Nothing
-  getDb = Just . _msdb
+  getDb = Just . msdb
   getDelims _ = Just ('[',']')
 
 connAuth :: MSAuthn -> [(Text, Text)]

@@ -1,5 +1,6 @@
 -- todo: fix ToText instance
 -- todo: orschema was never used but we dont use it in the connection string but is required downstream for getalltables etc
+{-# OPTIONS -Wno-partial-fields #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -31,7 +32,6 @@ import Data.Text.Lazy.Builder (fromText)
 import Data.Text (Text)
 import qualified Data.Text as T
 import GHC.Generics (Generic)
-import Control.Lens.TH (makeLenses, makePrisms)
 import qualified Language.Haskell.TH.Syntax as TH (Lift)
 import Dhall
     ( (>*<),
@@ -57,10 +57,8 @@ import Data.Functor.Contravariant ((>$<), Contravariant(contramap))
 import Data.Functor.Contravariant.Divisible (Divisible(divide))
 import Control.DeepSeq (NFData)
 
-data OracleConnType = TnsName { _ocdriver :: !Text, _octns :: !Text } | DsnOracle !Text
-  deriving (TH.Lift, Show, Generic, Read, Eq)
-
-makePrisms ''OracleConnType
+data OracleConnType = TnsName { ocdriver :: !Text, octns :: !Text } | DsnOracle !Text
+  deriving (TH.Lift, Show, Generic, Eq)
 
 instance NFData OracleConnType
 
@@ -77,14 +75,12 @@ toOCT = union
 
 data DBOracle a =
   DBOracle
-    { _orConnType :: !OracleConnType
-    , _oruid :: !Text
-    , _orpwd :: !Secret
-    , _orschema :: !Text
-    , _ordict :: !DbDict
-    } deriving (Eq, TH.Lift, Show, Generic, Read)
-
-makeLenses ''DBOracle
+    { orConnType :: !OracleConnType
+    , oruid :: !Text
+    , orpwd :: !Secret
+    , orschema :: !Text
+    , ordict :: !DbDict
+    } deriving (Eq, TH.Lift, Show, Generic)
 
 instance NFData a => NFData (DBOracle a)
 
@@ -97,7 +93,7 @@ instance FromDhall (DBOracle a) where
   autoWith _i = dboracle
 
 dboracle :: Decoder (DBOracle a)
-dboracle = genericAutoWith defaultInterpretOptions { fieldModifier = T.drop 3 }
+dboracle = genericAutoWith defaultInterpretOptions { fieldModifier = T.drop (T.length "or") }
 
 instance ToText OracleConnType where
   toText = fromText . T.pack . show
@@ -124,12 +120,12 @@ instance ToText (DBOracle a) where
 
 instance DConn (DBOracle a) where
   connList DBOracle {..} =
---    getOrconnTypeList _orConnType <> (maybe [] (\x -> [("Schema", x)]) _orschema) <> [("Uid", _oruid), ("Pwd", unSecret _orpwd)] <> M.toList _ordict
-    getOrconnTypeList _orConnType
-     <> [("Uid", _oruid), ("Pwd", unSecret _orpwd)]
-     <> unDict _ordict
+--    getOrconnTypeList orConnType <> (maybe [] (\x -> [("Schema", x)]) orschema) <> [("Uid", oruid), ("Pwd", unSecret orpwd)] <> M.toList ordict
+    getOrconnTypeList orConnType
+     <> [("Uid", oruid), ("Pwd", unSecret orpwd)]
+     <> unDict ordict
   getDbDefault _ = ''DBOracle
-  showDb DBOracle {..} = [st|oracle #{_orConnType} schema=#{_orschema}|]
-  getSchema = Just . _orschema
+  showDb DBOracle {..} = [st|oracle #{orConnType} schema=#{orschema}|]
+  getSchema = Just . orschema
   getDb = const Nothing -- i dont know how to go across dbs within oracle
   getDelims _ = Just ('\"','\"')

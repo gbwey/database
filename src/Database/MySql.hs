@@ -30,7 +30,6 @@ import Data.Text.Lazy.Builder (fromText)
 import Data.Text (Text)
 import qualified Data.Text as T
 import GHC.Generics (Generic)
-import Control.Lens.TH (makeLenses)
 import qualified Language.Haskell.TH.Syntax as TH (Lift)
 import Dhall
     ( Natural,
@@ -50,16 +49,14 @@ import Control.DeepSeq (NFData)
 
 data DBMY a =
   DBMY
-    { _mydriver :: !Text
-    , _myserver :: !Text
-    , _myuid :: !Text
-    , _mypwd :: !Secret
-    , _mydb :: !Text
-    , _myport :: !(Maybe Natural)
-    , _mydict :: !DbDict
-    } deriving (TH.Lift, Show, Generic, Read, Eq)
-
-makeLenses ''DBMY
+    { mydriver :: !Text
+    , myserver :: !Text
+    , myuid :: !Text
+    , mypwd :: !Secret
+    , mydb :: !Text
+    , myport :: !(Maybe Natural)
+    , mydict :: !DbDict
+    } deriving (TH.Lift, Show, Generic, Eq)
 
 instance NFData a => NFData (DBMY a)
 
@@ -67,7 +64,7 @@ instance FromDhall (DBMY a) where
   autoWith _i = dbmysql
 
 dbmysql :: Decoder (DBMY a)
-dbmysql = genericAutoWith defaultInterpretOptions { fieldModifier = T.drop 3 }
+dbmysql = genericAutoWith defaultInterpretOptions { fieldModifier = T.drop (T.length "my") }
 
 instance ToDhall (DBMY a) where
   injectWith _o = recordEncoder $ contramap (\(DBMY a b c d e f g) -> (a, (b, (c, (d, (e, (f, g)))))))
@@ -81,21 +78,21 @@ instance ToDhall (DBMY a) where
 
 
 instance ToText (DBMY a) where
-  toText = fromText . _mydb
+  toText = fromText . mydb
 
--- {_mydriver};Server=#{_myserver};Port=#{maybe "3306" show _myport};Database=#{_mydb};User=#{_myuid};Password=#{unSecret _mypwd};option=67108864;#{extra}|]
+-- {mydriver};Server=#{myserver};Port=#{maybe "3306" show myport};Database=#{mydb};User=#{myuid};Password=#{unSecret mypwd};option=67108864;#{extra}|]
 
 instance DConn (DBMY a) where
   connList DBMY {..} =
-    [ ("Driver", wrapBraces _mydriver)
-    , ("Server", _myserver)
-    , ("Port", T.pack (show (fromMaybe 3306 _myport)))
-    , ("Database", _mydb)
-    , ("User", _myuid)
-    , ("Password", unSecret _mypwd)
-    ] <> unDict _mydict
+    [ ("Driver", wrapBraces mydriver)
+    , ("Server", myserver)
+    , ("Port", T.pack (show (fromMaybe 3306 myport)))
+    , ("Database", mydb)
+    , ("User", myuid)
+    , ("Password", unSecret mypwd)
+    ] <> unDict mydict
   getDbDefault _ = ''DBMY
-  showDb DBMY {..} = [st|mysql ip=#{_myserver} db=#{_mydb}|]
-  getSchema = Just . _mydb -- no schemas within dbs ie treats dbs as if it is a schema!!!
+  showDb DBMY {..} = [st|mysql ip=#{myserver} db=#{mydb}|]
+  getSchema = Just . mydb -- no schemas within dbs ie treats dbs as if it is a schema!!!
   getDb = const Nothing
   getDelims _ = Just ('`','`')

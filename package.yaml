@@ -12,16 +12,12 @@ extra-source-files:
 dependencies:
   - base >= 4.7 && < 5
   - aeson
-  - bytestring
   - contravariant
   - deepseq
   - dhall >= 1.32.0
-  - lens
-  - mtl
   - shakespeare
   - template-haskell
   - text
-  - containers
 
 library:
   source-dirs: src
@@ -33,8 +29,10 @@ library:
   - -Wpartial-fields
   - -Wunused-type-patterns
   - -Wredundant-constraints
+  - -Wnoncanonical-monad-instances
+#  - -Wmissing-export-lists
   when:
-     condition: impl(ghc >= 8.8)
+   - condition: impl(ghc >= 8.8)
      ghc-options:
      - -fwrite-ide-info
      - -hiedir=.hie

@@ -4,15 +4,13 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 491c77cac24797988b56c26e342999769c509df23b28ea27cead0d1fca15011e
+-- hash: 885c0569df34939f1c24016342472a50f7c5f4c2a119204ab3c0cfc228892885
 
 name:           database
 version:        0.1.0.0
-category:       Web
+category:       Database
 homepage:       https://github.com/gbwey/database#readme
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2018 Author name here
+copyright:      2018 grant weyburne
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
@@ -32,17 +30,13 @@ library
       Paths_database
   hs-source-dirs:
       src
-  ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wpartial-fields -Wunused-type-patterns -Wredundant-constraints
+  ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wpartial-fields -Wunused-type-patterns -Wredundant-constraints -Wnoncanonical-monad-instances
   build-depends:
       aeson
     , base >=4.7 && <5
-    , bytestring
-    , containers
     , contravariant
     , deepseq
     , dhall >=1.32.0
-    , lens
-    , mtl
     , shakespeare
     , template-haskell
     , text
@@ -61,14 +55,10 @@ test-suite database-test
   build-depends:
       aeson
     , base >=4.7 && <5
-    , bytestring
-    , containers
     , contravariant
     , database
     , deepseq
     , dhall >=1.32.0
-    , lens
-    , mtl
     , shakespeare
     , tasty
     , tasty-hunit

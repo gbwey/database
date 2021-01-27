@@ -5,8 +5,6 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE DeriveLift #-}
 {-# LANGUAGE DeriveGeneric #-}
@@ -43,7 +41,7 @@ class DConn a where
   -- | start and end deimiters for each database type
   getDelims :: HasCallStack => proxy a -> Maybe (Char, Char)
 
-newtype DbDict = DbDict { unDict :: [(Text, Text)] } deriving (TH.Lift, Generic, Eq, Read, Show)
+newtype DbDict = DbDict { unDict :: [(Text, Text)] } deriving (TH.Lift, Generic, Eq, Show)
 instance NFData DbDict
 
 instance Semigroup DbDict where
@@ -58,7 +56,7 @@ instance ToDhall DbDict where
 instance FromDhall DbDict where
   autoWith i = DbDict <$> autoWith i
 
-newtype Secret = Secret { unSecret :: Text } deriving (TH.Lift, Generic, Eq, Read)
+newtype Secret = Secret { unSecret :: Text } deriving (TH.Lift, Generic, Eq)
 instance NFData Secret
 
 instance IsString Secret where

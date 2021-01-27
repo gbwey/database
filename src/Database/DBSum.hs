@@ -1,21 +1,14 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ConstraintKinds #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE DeriveLift #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE ViewPatterns #-}
 module Database.DBSum where
 import Dhall
     ( (>|<),
@@ -27,7 +20,6 @@ import Dhall
       ToDhall(..) )
 import Data.Functor.Contravariant ((>$<))
 import GHC.Generics (Generic)
-import Control.Lens.TH (makePrisms)
 import qualified Dhall as D
 import qualified Language.Haskell.TH.Syntax as TH
 import Database.MSSql (DBMS)
@@ -45,8 +37,6 @@ data DBSum a =
    | OR !(DBOracle a)
    | S3 !(DBSqlite a)
    deriving (TH.Lift, Generic, Show, Eq)
-
-makePrisms ''DBSum
 
 instance NFData a => NFData (DBSum a)
 
@@ -111,7 +101,7 @@ instance DConn (DBSum a) where
 
 {-
 >D.input D.auto "./test_db.dhall" :: IO (DBSum ())
-MS (DBMS {_msdriver = "fred", _msserver = "asdf", _msauthn = Trusted, _msdb = "xx"})
+MS (DBMS {msdriver = "fred", msserver = "asdf", msauthn = Trusted, msdb = "xx"})
 it :: DBSum ()
 -}
 

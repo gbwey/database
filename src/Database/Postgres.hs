@@ -30,7 +30,6 @@ import Data.Text.Lazy.Builder (fromText)
 import Data.Text (Text)
 import qualified Data.Text as T
 import GHC.Generics (Generic)
-import Control.Lens.TH (makeLenses)
 import qualified Language.Haskell.TH.Syntax as TH (Lift)
 import Dhall
     ( Natural,
@@ -50,17 +49,15 @@ import Control.DeepSeq (NFData)
 
 data DBPG a =
   DBPG
-    { _pgdriver :: !Text
-    , _pgserver :: !Text
-    , _pgschema :: !(Maybe Text)
-    , _pguid :: !Text
-    , _pgpwd :: !Secret
-    , _pgdb :: !Text
-    , _pgport :: !(Maybe Natural)
-    , _pgdict :: !DbDict
-    } deriving (TH.Lift, Show, Generic, Read, Eq)
-
-makeLenses ''DBPG
+    { pgdriver :: !Text
+    , pgserver :: !Text
+    , pgschema :: !(Maybe Text)
+    , pguid :: !Text
+    , pgpwd :: !Secret
+    , pgdb :: !Text
+    , pgport :: !(Maybe Natural)
+    , pgdict :: !DbDict
+    } deriving (TH.Lift, Show, Generic, Eq)
 
 instance NFData a => NFData (DBPG a)
 
@@ -68,7 +65,7 @@ instance FromDhall (DBPG a) where
   autoWith _i = dbpostgres
 
 dbpostgres :: Decoder (DBPG a)
-dbpostgres = genericAutoWith defaultInterpretOptions { fieldModifier = T.drop 3 }
+dbpostgres = genericAutoWith defaultInterpretOptions { fieldModifier = T.drop (T.length "pg") }
 
 instance ToDhall (DBPG a) where
   injectWith _o = recordEncoder $ contramap (\(DBPG a b c d e f g h) -> (a, (b, (c, (d, (e, (f, (g, h))))))))
@@ -82,22 +79,22 @@ instance ToDhall (DBPG a) where
          encodeField @DbDict "dict")
 
 instance ToText (DBPG a) where
-  toText x = fromText $ maybe "" (<> ".") (_pgschema x) <> _pgdb x
+  toText x = fromText $ maybe "" (<> ".") (pgschema x) <> pgdb x
 
 instance DConn (DBPG a) where
   connList DBPG {..} =
-    [ ("Driver", wrapBraces _pgdriver)
-    , ("Server", _pgserver)
-    , ("Uid", _pguid)
-    , ("Pwd", unSecret _pgpwd)
-    , ("Database", _pgdb)
-    , ("Port", T.pack (show (fromMaybe 5432 _pgport)))
-    ] <> maybe [] (\x -> [("Schema", x)]) _pgschema
-      <> unDict _pgdict
+    [ ("Driver", wrapBraces pgdriver)
+    , ("Server", pgserver)
+    , ("Uid", pguid)
+    , ("Pwd", unSecret pgpwd)
+    , ("Database", pgdb)
+    , ("Port", T.pack (show (fromMaybe 5432 pgport)))
+    ] <> maybe [] (\x -> [("Schema", x)]) pgschema
+      <> unDict pgdict
 
--- connText DBPG {..} = [st|#{_pgdriver};Server=#{_pgserver};Port=#{maybe "5432" show _pgport};Database=#{_pgdb};Uid=#{_pguid};Pwd=#{unSecret _pgpwd};|]
+-- connText DBPG {..} = [st|#{pgdriver};Server=#{pgserver};Port=#{maybe "5432" show pgport};Database=#{pgdb};Uid=#{pguid};Pwd=#{unSecret pgpwd};|]
   getDbDefault _ = ''DBPG
-  showDb DBPG {..} = [st|postgres ip=#{_pgserver} db=#{_pgdb}|]
-  getSchema = _pgschema -- not sure how to specify the schema for postgres odbc
-  getDb = Just . _pgdb
+  showDb DBPG {..} = [st|postgres ip=#{pgserver} db=#{pgdb}|]
+  getSchema = pgschema -- not sure how to specify the schema for postgres odbc
+  getDb = Just . pgdb
   getDelims _ = Just ('\"','\"')
