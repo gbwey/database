@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 885c0569df34939f1c24016342472a50f7c5f4c2a119204ab3c0cfc228892885
+-- hash: c9f703a7e13e21e2b7cb21e0f11b0b0f547188fcf201ace94ba5f76228e32a9b
 
 name:           database
 version:        0.1.0.0
@@ -30,7 +30,7 @@ library
       Paths_database
   hs-source-dirs:
       src
-  ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wpartial-fields -Wunused-type-patterns -Wredundant-constraints -Wnoncanonical-monad-instances
+  ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wpartial-fields -Wunused-type-patterns -Wredundant-constraints -Wnoncanonical-monad-instances -Wmonomorphism-restriction -Wmissing-deriving-strategies -Wmissing-local-signatures -Widentities -Wmissing-export-lists
   build-depends:
       aeson
     , base >=4.7 && <5
@@ -40,8 +40,6 @@ library
     , shakespeare
     , template-haskell
     , text
-  if impl(ghc >= 8.8)
-    ghc-options: -fwrite-ide-info -hiedir=.hie -Widentities
   default-language: Haskell2010
 
 test-suite database-test
@@ -51,7 +49,7 @@ test-suite database-test
       Paths_database
   hs-source-dirs:
       test
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wpartial-fields -Wunused-type-patterns -Wredundant-constraints
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wpartial-fields -Wunused-type-patterns -Wredundant-constraints -Wmissing-deriving-strategies -Widentities -Wno-missing-export-lists -Wno-missing-local-signatures
   build-depends:
       aeson
     , base >=4.7 && <5
@@ -64,6 +62,4 @@ test-suite database-test
     , tasty-hunit
     , template-haskell
     , text
-  if impl(ghc >= 8.8)
-    ghc-options: -fwrite-ide-info -hiedir=.hie -Widentities
   default-language: Haskell2010

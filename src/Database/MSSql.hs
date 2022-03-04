@@ -1,106 +1,131 @@
 {-# OPTIONS -Wno-partial-fields #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveLift #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE ViewPatterns #-}
-{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE DeriveLift #-}
-{-# LANGUAGE TypeApplications #-}
-module Database.MSSql where
-import Prelude hiding (FilePath)
-import Text.Shakespeare.Text (st,ToText(..))
-import Data.Text.Lazy.Builder (fromText)
+{-# LANGUAGE ViewPatterns #-}
+
+{- |
+Module      : Database.MSSql
+Description : MSSQL Server
+Copyright   : (c) Grant Weyburne, 2016
+License     : BSD-3
+
+Implementation of GConn for mssql.
+-}
+module Database.MSSql (
+  MSAuthn (..),
+  DBMS (..),
+  dbmssql,
+  connAuth,
+) where
+
+import Control.DeepSeq (NFData)
+import Data.Functor.Contravariant (Contravariant (contramap), (>$<))
+import Data.Functor.Contravariant.Divisible
+import Data.List.NonEmpty (NonEmpty (..))
 import Data.Text (Text)
-import qualified Data.Text as T
+import Data.Text.Lazy.Builder (fromText)
+import Database.Util
+import Dhall (
+  Decoder,
+  FromDhall (..),
+  ToDhall (..),
+  encodeConstructorWith,
+  encodeField,
+  genericAutoWith,
+  inject,
+  recordEncoder,
+  unionEncoder,
+  (>*<),
+  (>|<),
+ )
 import GHC.Generics (Generic)
 import qualified Language.Haskell.TH.Syntax as TH (Lift)
-import Dhall
-    ( (>*<),
-      (>|<),
-      defaultInterpretOptions,
-      encodeConstructorWith,
-      encodeField,
-      genericAutoWith,
-      inject,
-      recordEncoder,
-      unionEncoder,
-      Decoder,
-      FromDhall(..),
-      InterpretOptions(fieldModifier),
-      ToDhall(..) )
-import Database.Util
-import Data.Functor.Contravariant ((>$<), Contravariant(contramap))
-import Data.Functor.Contravariant.Divisible
-import Control.DeepSeq (NFData)
+import Text.Shakespeare.Text (ToText (..), st)
+import Prelude hiding (FilePath)
 
-data MSAuthn = Trusted | UserPwd { msuser :: !Text, mspassword :: !Secret }
-  deriving (TH.Lift, Show, Eq, Generic)
+-- | authentication options for mssql
+data MSAuthn = Trusted | UserPwd {msuser :: !Text, mspassword :: !Secret}
+  deriving stock (TH.Lift, Show, Eq, Generic)
 
 instance NFData MSAuthn
 
 instance FromDhall MSAuthn where
-  autoWith _i = genericAutoWith (defaultInterpretOptions { fieldModifier = T.drop (T.length "ms") })
+  autoWith _i = genericAutoWith (fieldModDB "ms")
 
-data DBMS a =
-  DBMS
-    { msdriver :: !Text
-    , msserver :: !Text
-    , msauthn :: !MSAuthn
-    , msdb :: !Text
-    , msdict :: !DbDict
-    } deriving (TH.Lift, Show, Eq, Generic)
+-- | mssql connection settings
+data DBMS a = DBMS
+  { msdriver :: !Text
+  , msserver :: !Text
+  , msauthn :: !MSAuthn
+  , msdb :: !Text
+  , msdict :: !DbDict
+  }
+  deriving stock (TH.Lift, Show, Eq, Generic)
 
 instance NFData a => NFData (DBMS a)
 
 instance FromDhall (DBMS a) where
   autoWith _i = dbmssql
 
+-- | decoder for a mssql
 dbmssql :: Decoder (DBMS a)
-dbmssql = genericAutoWith defaultInterpretOptions { fieldModifier = T.drop (T.length "ms") }
+dbmssql = genericAutoWith (fieldModDB "ms")
 
 instance ToDhall MSAuthn where
-  injectWith _ = adapt >$< unionEncoder
-   (   encodeConstructorWith "Trusted" inject
-   >|< encodeConstructorWith "UserPwd" (recordEncoder $ divide (\case UserPwd a b -> (a,b); o -> error ("invalid userpwd: found " ++ show o)) (encodeField @Text "user") (encodeField @Secret "password"))
-   )
+  injectWith _ =
+    adapt
+      >$< unionEncoder
+        ( encodeConstructorWith "Trusted" inject
+            >|< encodeConstructorWith "UserPwd" (recordEncoder $ divide (\case UserPwd a b -> (a, b); o -> error ("invalid userpwd: found " ++ show o)) (encodeField @Text "user") (encodeField @Secret "password"))
+        )
    where
-     adapt Trusted = Left ()
-     adapt z@UserPwd {} = Right z
+    adapt Trusted = Left ()
+    adapt z@UserPwd{} = Right z
 
 instance ToDhall (DBMS a) where
-  injectWith _o = recordEncoder $ contramap (\(DBMS a b c d e) -> (a, (b, (c, (d, e)))))
-         (encodeField @Text "driver" >*<
-         encodeField @Text "server" >*<
-         encodeField @MSAuthn "authn" >*<
-         encodeField @Text "db" >*<
-         encodeField @DbDict "dict")
+  injectWith _o =
+    recordEncoder $
+      contramap
+        (\(DBMS a b c d e) -> (a, (b, (c, (d, e)))))
+        ( encodeField @Text "driver"
+            >*< encodeField @Text "server"
+            >*< encodeField @MSAuthn "authn"
+            >*< encodeField @Text "db"
+            >*< encodeField @DbDict "dict"
+        )
 
 instance ToText (DBMS a) where
   toText = fromText . msdb
 
 instance DConn (DBMS a) where
-  connList DBMS {..} =
-    [ ("Driver", wrapBraces msdriver)
+  connList DBMS{..} =
+    [ ("Driver", wrapOdbcBraces msdriver)
     , ("Server", msserver)
     , ("Database", msdb)
-    ] <> connAuth msauthn
+    ]
+      <> connAuth msauthn
       <> unDict msdict
   getDbDefault _ = ''DBMS
-  showDb DBMS {..} = [st|mssql ip=#{msserver} db=#{msdb}|]
+  showDb DBMS{..} = [st|mssql ip=#{msserver} db=#{msdb}|]
   getSchema = const Nothing
   getDb = Just . msdb
-  getDelims _ = Just ('[',']')
+  getDelims _ = ('[', ']') :| [('"', '"')]
 
+-- | convert 'MSAuthn' to c# connection options
 connAuth :: MSAuthn -> [(Text, Text)]
-connAuth Trusted = [("Trusted_Connection","yes")]
+connAuth Trusted = [("Trusted_Connection", "yes")]
 connAuth (UserPwd uid (Secret pwd)) = [("uid", uid), ("pwd", pwd)]
-

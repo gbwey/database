@@ -30,13 +30,11 @@ library:
   - -Wunused-type-patterns
   - -Wredundant-constraints
   - -Wnoncanonical-monad-instances
-#  - -Wmissing-export-lists
-  when:
-   - condition: impl(ghc >= 8.8)
-     ghc-options:
-     - -fwrite-ide-info
-     - -hiedir=.hie
-     - -Widentities
+  - -Wmonomorphism-restriction
+  - -Wmissing-deriving-strategies
+  - -Wmissing-local-signatures
+  - -Widentities
+  - -Wmissing-export-lists
 
 tests:
   database-test:
@@ -55,12 +53,10 @@ tests:
     - -Wpartial-fields
     - -Wunused-type-patterns
     - -Wredundant-constraints
-    when:
-       condition: impl(ghc >= 8.8)
-       ghc-options:
-       - -fwrite-ide-info
-       - -hiedir=.hie
-       - -Widentities
+    - -Wmissing-deriving-strategies
+    - -Widentities
+    - -Wno-missing-export-lists
+    - -Wno-missing-local-signatures
     dependencies:
     - database
     - tasty

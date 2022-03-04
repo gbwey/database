@@ -1,11 +1,7 @@
 cradle:
   stack:
-   - path: ".\\src"
-     component: "database:lib"
-   - path: ".\\test"
-     component: "database:test:database-test"
-#  cabal:
-#   - path: "./src"
-#     component: "lib:database"
-#   - path: "./test"
-#     component: "test:database-test"
+    - path: "./src"
+      component: "database:lib"
+
+    - path: "./test"
+      component: "database:test:database-test"

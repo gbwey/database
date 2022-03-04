@@ -1,16 +1,19 @@
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ConstraintKinds #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE DeriveLift #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveLift #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ViewPatterns #-}
+
 {- |
-Module      : Database
+Module      : Database.Util
 Description : Utility methods
 Copyright   : (c) Grant Weyburne, 2016
 License     : GPL-3
@@ -18,37 +21,48 @@ License     : GPL-3
 Mainly has various logging functions and timing of commands.
 Allows you to log to a file or the screen or both
 -}
-module Database.Util where
-import qualified Data.Text as T
-import Data.Text (Text)
-import Data.String (IsString(..))
-import GHC.Generics (Generic)
-import Dhall (FromDhall(..), ToDhall(..))
-import qualified Language.Haskell.TH.Syntax as TH (Lift,Name)
-import Data.Aeson (ToJSON(..))
-import Data.Functor.Contravariant ((>$<))
-import GHC.Stack (HasCallStack)
-import Control.DeepSeq (NFData)
+module Database.Util (
+  DConn (..),
+  DbDict (..),
+  wrapOdbcBraces,
+  fieldModDB,
+  Secret (..),
+) where
 
+import Control.DeepSeq (NFData)
+import Data.Aeson (ToJSON (..))
+import Data.Functor.Contravariant ((>$<))
+import Data.List.NonEmpty (NonEmpty (..))
+import qualified Data.List.NonEmpty as N
+import Data.Maybe
+import Data.String (IsString (..))
+import Data.Text (Text)
+import qualified Data.Text as T
+import Dhall (FromDhall (..), ToDhall (..))
+import qualified Dhall as D
+import GHC.Generics (Generic)
+import GHC.Stack (HasCallStack)
+import qualified Language.Haskell.TH.Syntax as TH (Lift, Name)
+
+-- | simple accessor class for database connections
 class DConn a where
-  connList :: HasCallStack => a -> [(Text, Text)]
-  connText :: HasCallStack => a -> Text
+  connList :: a -> [(Text, Text)]
+  connText :: a -> Text
   connText a = T.intercalate ";" (map (\(k, v) -> k <> "=" <> v) (connList a))
   getDbDefault :: HasCallStack => p a -> TH.Name
   showDb :: a -> Text
   getDb :: a -> Maybe Text
   getSchema :: a -> Maybe Text
+
   -- | start and end deimiters for each database type
-  getDelims :: HasCallStack => proxy a -> Maybe (Char, Char)
+  getDelims :: HasCallStack => proxy a -> NonEmpty (Char, Char)
 
-newtype DbDict = DbDict { unDict :: [(Text, Text)] } deriving (TH.Lift, Generic, Eq, Show)
+-- | dictionary holding odbc options
+newtype DbDict = DbDict {unDict :: [(Text, Text)]}
+  deriving stock (TH.Lift, Generic, Eq, Show)
+  deriving newtype (Semigroup, Monoid)
+
 instance NFData DbDict
-
-instance Semigroup DbDict where
-  DbDict a <> DbDict b = DbDict (a <> b)
-
-instance Monoid DbDict where
-  mempty = DbDict mempty
 
 instance ToDhall DbDict where
   injectWith i = unDict >$< injectWith i
@@ -56,7 +70,9 @@ instance ToDhall DbDict where
 instance FromDhall DbDict where
   autoWith i = DbDict <$> autoWith i
 
-newtype Secret = Secret { unSecret :: Text } deriving (TH.Lift, Generic, Eq)
+-- | hides the password
+newtype Secret = Secret {unSecret :: Text} deriving stock (TH.Lift, Generic, Eq)
+
 instance NFData Secret
 
 instance IsString Secret where
@@ -74,21 +90,31 @@ instance ToJSON Secret where
 instance Show Secret where
   show _ = "Secret ********"
 
-wrapBraces :: HasCallStack => Text -> Text
-wrapBraces (T.strip -> x) =
-  let msg = "dont use braces and dont use Driver=... eg this works: \"ODBC Driver 17 for SQL Server\""
-      msg0 = "\n" ++ msg ++ "\n[" ++ T.unpack x ++ "]"
-  in case T.uncons x of
-       Nothing -> error "wrapBraces: missing driver!!"
-       Just (s,y) | T.length x < 5 -> error $ "wrapBraces: not enough characters" ++ msg0
-                  | otherwise ->
-         case T.unsnoc y of
-           Nothing -> error $ "wrapBraces: not enough characters" ++ msg0
-           Just (_,e) ->
-             case (s,e) of
-               ('{','}') -> x
-               ('{',_) -> error $ "wrapBraces: found open brace and without a closing brace" ++ msg0
-               (_,'}') -> error $ "wrapBraces: found closed brace and without an opening brace" ++ msg0
-               _ -> "{" <> x <> "}"
+-- | validates an odbc connection string and wraps braces as needed
+wrapOdbcBraces :: HasCallStack => Text -> Text
+wrapOdbcBraces (T.strip -> x) =
+  let msg1 :: String
+      msg1 = "dont use braces and dont use Driver=... eg this works: \"ODBC Driver 17 for SQL Server\""
+      f txt = "wrapOdbcBraces:" ++ txt ++ "\n" ++ msg1 ++ "\n[" ++ T.unpack x ++ "]"
+   in case T.unpack x of
+        s : xs@(_ : _ : _ : _ : _) ->
+          case (s, N.last (s :| xs)) of
+            ('{', '}') -> x
+            ('{', _) -> error $ f "found an open brace without a closing brace"
+            (_, '}') -> error $ f "found a closed brace without an opening brace"
+            (_, _) -> "{" <> x <> "}"
+        _o -> error $ f "not enough characters"
 
-
+{- | translates a haskell field to the dhall field without the prefix
+   checks that the given a prefix matches for each of the fields
+-}
+fieldModDB :: HasCallStack => Text -> D.InterpretOptions
+fieldModDB prefix =
+  D.defaultInterpretOptions
+    { D.fieldModifier = f
+    }
+ where
+  f field =
+    fromMaybe
+      (error $ T.unpack $ "fieldModDB:expected prefix[" <> prefix <> "] for field[" <> field <> "]")
+      (T.stripPrefix prefix field)

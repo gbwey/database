@@ -1,3 +1,4 @@
+.vscode/
 .ghc.environment.*
 .history
 dist-newstyle/
@@ -15,6 +16,8 @@ mydriver.dhall
 ordriver.dhall
 pgdriver.dhall
 s3driver.dhall
-
 stack*.yaml.lock
 .hie/
+*.bundle
+stan.html
+.stack-work-profiling/
