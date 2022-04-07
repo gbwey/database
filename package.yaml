@@ -6,8 +6,6 @@ homepage:            https://github.com/gbwey/database#readme
 license:             BSD3
 copyright:           2018 grant weyburne
 category:            Database
-extra-source-files:
-- README.md
 
 dependencies:
   - base >= 4.7 && < 5

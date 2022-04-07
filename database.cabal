@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c9f703a7e13e21e2b7cb21e0f11b0b0f547188fcf201ace94ba5f76228e32a9b
+-- hash: 85e79baeeaa98ae4e7505ba25219c7677d96401bdfbf31f1ac17de1e568f41d3
 
 name:           database
 version:        0.1.0.0
@@ -14,8 +14,6 @@ copyright:      2018 grant weyburne
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
-extra-source-files:
-    README.md
 
 library
   exposed-modules:
